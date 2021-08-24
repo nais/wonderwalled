@@ -30,3 +30,5 @@ spec:
   {{/each}}
   idporten:
     enabled: true
+    sidecar:
+      enabled: true
