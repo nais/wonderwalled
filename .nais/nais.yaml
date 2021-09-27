@@ -37,5 +37,5 @@ spec:
     sidecar:
       enabled: true
   env:
-    name: WONDERWALL_URL
-    value: {{ ingress }}
+    - name: WONDERWALL_URL
+      value: {{ ingress }}
