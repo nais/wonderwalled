@@ -8,3 +8,4 @@ ENV JAVA_OPTS="-Dlogback.configurationFile=logback-remote.xml"
 COPY build/libs/*-all.jar app.jar
 COPY --from=linkerd /tmp/linkerd-await /linkerd-await
 ENTRYPOINT ["/linkerd-await", "--shutdown", "--"]
+CMD ["/entrypoint.sh"]
