@@ -1,2 +1,1 @@
-ingresses:
-- "https://wonderwalled.dev.intern.nav.no"
+ingress: "https://wonderwalled.dev.intern.nav.no"

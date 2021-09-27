@@ -7,7 +7,6 @@ import io.ktor.auth.authentication
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.request.path
-import io.ktor.request.uri
 import io.ktor.response.respondRedirect
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -27,9 +26,7 @@ internal fun Application.jwtAuthentication(config: Configuration) {
             validate { credentials -> JWTPrincipal(credentials.payload) }
             challenge { _,_ ->
                 val requestPath = call.request.path()
-                val host = call.request.headers["Host"]
-                val protocol = if (config.application.secure) "https" else "http"
-                call.respondRedirect("$protocol://$host/oauth2/login?redirect=$requestPath")
+                call.respondRedirect("${config.wonderwall.url}/oauth2/login?redirect=$requestPath")
             }
         }
     }

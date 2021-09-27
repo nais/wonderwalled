@@ -2,9 +2,7 @@ package io.nais
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
-import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.application.log
 import io.ktor.auth.authenticate
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
@@ -12,10 +10,7 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
-import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
-import io.ktor.response.respond
 import io.ktor.routing.IgnoreTrailingSlash
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer

@@ -5,7 +5,6 @@ import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
 import com.natpryce.konfig.EnvironmentVariables
 import com.natpryce.konfig.Key
-import com.natpryce.konfig.booleanType
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
@@ -18,12 +17,12 @@ private val config = systemProperties() overriding
 
 data class Configuration(
     val application: Application = Application(),
-    val openid: OpenId = OpenId()
+    val openid: OpenId = OpenId(),
+    val wonderwall: Wonderwall = Wonderwall()
 ) {
     data class Application(
         val port: Int = config[Key("application.port", intType)],
-        val name: String = config[Key("application.name", stringType)],
-        val secure: Boolean = config[Key("application.secure", booleanType)]
+        val name: String = config[Key("application.name", stringType)]
     )
 
     data class OpenId(
@@ -32,6 +31,10 @@ data class Configuration(
         val openIdConfiguration: OpenIdConfiguration = runBlocking {
             httpClient.get(wellKnownConfigurationUrl)
         }
+    )
+
+    data class Wonderwall(
+        val url: String = config[Key("wonderwall.url", stringType)]
     )
 }
 
