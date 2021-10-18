@@ -36,6 +36,9 @@ spec:
     enabled: true
     sidecar:
       enabled: true
+  azure:
+    application:
+      enabled: true
   env:
     - name: WONDERWALL_URL
       value: {{ ingress }}
