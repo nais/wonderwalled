@@ -3,7 +3,6 @@ package io.nais
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
-import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.authenticate
@@ -41,7 +40,12 @@ internal val httpClient = HttpClient(Apache) {
 
 fun main() {
     val config = Configuration()
-    val jwkProvider = JwkProviderBuilder(URL(config.openid.openIdConfiguration.jwksUri))
+    val idportenJwkProvider = JwkProviderBuilder(URL(config.idporten.openIdConfiguration.jwksUri))
+        .cached(10, 1, TimeUnit.HOURS)
+        .rateLimited(10, 1, TimeUnit.MINUTES)
+        .build()
+
+    val azureJwkProvider = JwkProviderBuilder(URL(config.azure.openIdConfiguration.jwksUri))
         .cached(10, 1, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
@@ -58,10 +62,18 @@ fun main() {
         }
 
         authentication {
-            jwt {
-                verifier(jwkProvider, config.openid.openIdConfiguration.issuer) {
+            jwt("idporten") {
+                verifier(idportenJwkProvider, config.idporten.openIdConfiguration.issuer) {
                     withClaimPresence("client_id")
-                    withClaim("client_id", config.openid.clientId)
+                    withClaim("client_id", config.idporten.clientId)
+                }
+                validate { credentials -> JWTPrincipal(credentials.payload) }
+                challenge { _, _ -> call.respondRedirect("${config.wonderwall.url}/oauth2/login?redirect=${call.request.path()}") }
+            }
+
+            jwt("azure") {
+                verifier(azureJwkProvider, config.azure.openIdConfiguration.issuer) {
+                    withAudience(config.azure.clientId)
                 }
                 validate { credentials -> JWTPrincipal(credentials.payload) }
                 challenge { _, _ -> call.respondRedirect("${config.wonderwall.url}/oauth2/login?redirect=${call.request.path()}") }
@@ -77,7 +89,7 @@ fun main() {
                     call.respond("ready")
                 }
             }
-            authenticate {
+            authenticate("idporten", "azure") {
                 route("api") {
                     get("headers") {
                         call.respond(call.requestHeaders())

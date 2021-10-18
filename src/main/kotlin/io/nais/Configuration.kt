@@ -17,7 +17,8 @@ private val config = systemProperties() overriding
 
 data class Configuration(
     val application: Application = Application(),
-    val openid: OpenId = OpenId(),
+    val azure: Azure = Azure(),
+    val idporten: IdPorten = IdPorten(),
     val wonderwall: Wonderwall = Wonderwall()
 ) {
     data class Application(
@@ -25,9 +26,17 @@ data class Configuration(
         val name: String = config[Key("application.name", stringType)]
     )
 
-    data class OpenId(
+    data class IdPorten(
         val clientId: String = config[Key("idporten.client.id", stringType)],
         val wellKnownConfigurationUrl: String = config[Key("idporten.well.known.url", stringType)],
+        val openIdConfiguration: OpenIdConfiguration = runBlocking {
+            httpClient.get(wellKnownConfigurationUrl)
+        }
+    )
+
+    data class Azure(
+        val clientId: String = config[Key("azure.app.client.id", stringType)],
+        val wellKnownConfigurationUrl: String = config[Key("azure.app.well.known.url", stringType)],
         val openIdConfiguration: OpenIdConfiguration = runBlocking {
             httpClient.get(wellKnownConfigurationUrl)
         }
