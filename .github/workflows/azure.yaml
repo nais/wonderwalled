@@ -38,7 +38,7 @@ jobs:
             ${{ runner.os }}-gradle-wrapper-
 
       - name: Build with Gradle
-        run: ./gradlew clean build shadowJar
+        run: ./gradlew clean azure:build azure:shadowJar
 
       - name: Login to GitHub Docker Registry
         uses: docker/login-action@v1
