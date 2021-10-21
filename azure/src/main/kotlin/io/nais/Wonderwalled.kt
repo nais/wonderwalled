@@ -17,6 +17,7 @@ import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
+import io.ktor.request.host
 import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.response.respondRedirect
@@ -40,17 +41,12 @@ internal val httpClient = HttpClient(Apache) {
 
 fun main() {
     val config = Configuration()
-    val idportenJwkProvider = JwkProviderBuilder(URL(config.idporten.openIdConfiguration.jwksUri))
+    val jwkProvider = JwkProviderBuilder(URL(config.azure.openIdConfiguration.jwksUri))
         .cached(10, 1, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
 
-    val azureJwkProvider = JwkProviderBuilder(URL(config.azure.openIdConfiguration.jwksUri))
-        .cached(10, 1, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
-
-    embeddedServer(Netty, port = config.application.port) {
+    embeddedServer(Netty, port = config.port) {
         install(ContentNegotiation) {
             jackson {
                 enable(SerializationFeature.INDENT_OUTPUT)
@@ -62,21 +58,17 @@ fun main() {
         }
 
         authentication {
-            jwt("idporten") {
-                verifier(idportenJwkProvider, config.idporten.openIdConfiguration.issuer) {
-                    withClaimPresence("client_id")
-                    withClaim("client_id", config.idporten.clientId)
-                }
-                validate { credentials -> JWTPrincipal(credentials.payload) }
-                challenge { _, _ -> call.respondRedirect("${config.wonderwall.url}/oauth2/login?redirect=${call.request.path()}") }
-            }
-
-            jwt("azure") {
-                verifier(azureJwkProvider, config.azure.openIdConfiguration.issuer) {
+            jwt {
+                verifier(jwkProvider, config.azure.openIdConfiguration.issuer) {
                     withAudience(config.azure.clientId)
                 }
                 validate { credentials -> JWTPrincipal(credentials.payload) }
-                challenge { _, _ -> call.respondRedirect("${config.wonderwall.url}/oauth2/login?redirect=${call.request.path()}") }
+                challenge { _, _ ->
+                    val ingress = config.ingress.ifEmpty {
+                        "${call.request.local.scheme}://${call.request.host()}"
+                    }
+                    call.respondRedirect("$ingress/oauth2/login?redirect=${call.request.path()}")
+                }
             }
         }
 
@@ -89,7 +81,7 @@ fun main() {
                     call.respond("ready")
                 }
             }
-            authenticate("idporten", "azure") {
+            authenticate {
                 route("api") {
                     get("headers") {
                         call.respond(call.requestHeaders())

@@ -1,2 +1,2 @@
-rootProject.name = 'wonderwalled'
-
+rootProject.name = "wonderwalled"
+include("azure", "idporten")

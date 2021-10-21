@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: "wonderwalled"
+  name: "wonderwalled-azure"
   namespace: "aura"
   labels:
     team: "aura"
@@ -32,13 +32,8 @@ spec:
       memory: "256Mi"
   ingresses:
     - {{ ingress }}
-  idporten:
-    enabled: true
-    sidecar:
-      enabled: true
   azure:
     application:
       enabled: true
-  env:
-    - name: WONDERWALL_URL
-      value: {{ ingress }}
+    sidecar:
+      enabled: true
