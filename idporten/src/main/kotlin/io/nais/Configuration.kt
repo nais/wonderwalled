@@ -16,11 +16,12 @@ private val config = systemProperties() overriding
 data class Configuration(
     val port: Int = config.getOrElse(Key("application.port", intType), 8080),
     val idporten: IdPorten = IdPorten(),
+
+    // optional, generally only needed when running locally
     val ingress: String = config.getOrElse(
         key = Key("wonderwall.ingress", stringType),
         default = ""
     ),
-    // optional, generally only needed when running locally
 ) {
     data class IdPorten(
         val clientId: String = config[Key("idporten.client.id", stringType)],

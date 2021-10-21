@@ -16,6 +16,7 @@ private val config = systemProperties() overriding
 data class Configuration(
     val port: Int = config.getOrElse(Key("application.port", intType), 8080),
     val azure: Azure = Azure(),
+
     // optional, generally only needed when running locally
     val ingress: String = config.getOrElse(
         key = Key("wonderwall.ingress", stringType),
