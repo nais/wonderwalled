@@ -65,8 +65,10 @@ fun main() {
                 }
                 validate { credentials -> JWTPrincipal(credentials.payload) }
                 challenge { _, _ ->
-
-                    call.respondRedirect("https://${call.request.host()}:/oauth2/login?redirect=${call.request.path()}")
+                    val ingress = config.ingress.ifEmpty {
+                        "${call.request.local.scheme}://${call.request.host()}"
+                    }
+                    call.respondRedirect("$ingress/oauth2/login?redirect=${call.request.path()}")
                 }
             }
         }
