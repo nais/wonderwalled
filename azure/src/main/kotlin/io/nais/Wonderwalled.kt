@@ -2,7 +2,9 @@ package io.nais
 
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.authenticate
@@ -62,11 +64,17 @@ fun main() {
                 verifier(jwkProvider, config.azure.openIdConfiguration.issuer) {
                     withAudience(config.azure.clientId)
                 }
+
                 validate { credentials -> JWTPrincipal(credentials.payload) }
+
+                // challenge is called if the request authentication fails or is not provided
                 challenge { _, _ ->
-                    val ingress = config.ingress.ifEmpty {
+                    val ingress = config.ingress.ifEmpty(defaultValue = {
                         "${call.request.local.scheme}://${call.request.host()}"
-                    }
+                    })
+
+                    // redirect to login endpoint (wonderwall) and indicate that the user should be redirected back
+                    // to the original request path after authentication
                     call.respondRedirect("$ingress/oauth2/login?redirect=${call.request.path()}")
                 }
             }
@@ -98,3 +106,14 @@ fun main() {
         }
     }.start(wait = true)
 }
+
+private fun ApplicationCall.getTokenInfo(): Map<String, JsonNode>? = authentication
+    .principal<JWTPrincipal>()
+    ?.let { principal ->
+        principal.payload.claims.entries.associate { claim ->
+            claim.key to claim.value.`as`(JsonNode::class.java)
+        }
+    }
+
+private fun ApplicationCall.requestHeaders(): Map<String, String> = request.headers.entries()
+    .associate { header -> header.key to header.value.joinToString() }

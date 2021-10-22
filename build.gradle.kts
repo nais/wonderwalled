@@ -1,18 +1,16 @@
 object Versions {
     const val konfig = "1.6.10.0"
     const val kotlinlogging = "2.0.10"
-    const val ktor = "1.6.3"
+    const val ktor = "1.6.4"
     const val logstash = "6.6"
     const val logback = "1.2.3"
 }
 
-val applicationMainClassName = "io.nais.WonderwalledKt"
-
 plugins {
     kotlin("jvm") version "1.5.21"
-    id("org.jmailen.kotlinter") version "3.5.0"
+    id("org.jmailen.kotlinter") version "3.6.0"
     id("com.github.ben-manes.versions") version "0.39.0"
-    id("com.github.johnrengelman.shadow") version "7.0.0" apply false
+    id("com.github.johnrengelman.shadow") version "7.1.0" apply false
 }
 
 allprojects {
@@ -44,7 +42,7 @@ subprojects {
             }
         }
         withType<Jar> {
-            manifest.attributes["Main-Class"] = applicationMainClassName
+            manifest.attributes["Main-Class"] = "io.nais.WonderwalledKt"
         }
     }
 
