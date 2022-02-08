@@ -16,18 +16,12 @@ jobs:
       - name: Checkout latest code
         uses: actions/checkout@v2
 
-      - name: Set up JDK 16
-        uses: actions/setup-java@v1
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
         with:
-          java-version: 16
-
-      - name: Setup build cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Setup Gradle wrapper cache
         uses: actions/cache@v2
@@ -37,8 +31,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-wrapper-
 
+      - name: Verify Gradle wrapper checksum
+        uses: gradle/wrapper-validation-action@v1
+
       - name: Build with Gradle
-        run: ./gradlew clean azure:build azure:shadowJar
+        run: ./gradlew clean wonderwalled-azure:build wonderwalled-azure:shadowJar
 
       - name: Login to GitHub Docker Registry
         uses: docker/login-action@v1
@@ -48,12 +45,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push the Docker image
-        working-directory: ./azure
+        working-directory: ./wonderwalled-azure
         run: |
           docker build --pull --tag ${IMAGE} .
           docker push ${IMAGE}
 
-  deploy-dev-gcp:
+  deploy:
     name: Deploy to dev-gcp
     needs: build
     runs-on: ubuntu-latest
@@ -64,17 +61,3 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: .nais/azure.yaml
-          VARS: .nais/dev/azure.yaml
-
-  deploy-prod-gcp:
-    name: Deploy to prod-gcp
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: nais/deploy/actions/deploy@v1
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: prod-gcp
-          RESOURCE: .nais/azure.yaml
-          VARS: .nais/prod/azure.yaml
