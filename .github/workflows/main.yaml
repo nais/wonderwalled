@@ -55,7 +55,7 @@ jobs:
         id: build-push
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671 # ratchet:docker/build-push-action@v4
         with:
-          context: wonderwalled-${{ matrix.module }}
+          context: ./wonderwalled-${{ matrix.module }}
           file: Dockerfile
           platforms: linux/amd64,linux/arm64
           pull: true
