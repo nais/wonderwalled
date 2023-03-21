@@ -4,7 +4,7 @@ on:
     branches:
       - master
 env:
-  IMAGE-BASENAME: ghcr.io/${{ github.repository }}
+  IMAGE_BASENAME: ghcr.io/${{ github.repository }}
 jobs:
   build:
     name: Build and push
