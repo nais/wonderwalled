@@ -74,11 +74,9 @@ jobs:
       - name: Sign the container image
         run: cosign sign --yes ${{ env.IMAGE_BASENAME }}@${{ steps.build-push.outputs.digest }}
       - name: Create SBOM
-        run: ./gradlew wonderwalled-$MODULE cyclonedxBom
-        env:
-          MODULE: ${{ matrix.module }}
+        run: gradle --init-script init.gradle cyclonedxBom
       - name: Attest image
-        run: cosign attest --yes --predicate build/reports/bom.json --type cyclonedx ${{ env.IMAGE_BASENAME }}@${{ steps.build-push.outputs.digest }}
+        run: cosign attest --yes --predicate ./wonderwalled-${{ matrix.module }}/build/reports/bom.json --type cyclonedx ${{ env.IMAGE_BASENAME }}@${{ steps.build-push.outputs.digest }}
   deploy:
     name: Deploy to dev-gcp
     needs: build
