@@ -1,0 +1,21 @@
+initscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        classpath "org.cyclonedx:cyclonedx-gradle-plugin:1.7.4"
+    }
+}
+
+allprojects{
+    apply plugin:org.cyclonedx.gradle.CycloneDxPlugin
+    cyclonedxBom {
+        skipProjects = [rootProject.name, "wonderwalled-common"]
+        projectType = "application"
+        outputFormat = "json"
+        includeLicenseText = false
+    }
+}
