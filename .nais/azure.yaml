@@ -31,7 +31,7 @@ spec:
       cpu: "50m"
       memory: "256Mi"
   ingresses:
-    - https://wonderwalled.dev.intern.nav.no
+    - https://wonderwalled-azure.intern.dev.nav.no
   azure:
     application:
       enabled: true

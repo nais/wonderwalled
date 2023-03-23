@@ -1,4 +1,4 @@
-name: azure
+name: main
 on:
   push:
     branches:
@@ -16,9 +16,6 @@ jobs:
     strategy:
       matrix:
         module: [azure, idporten]
-    outputs:
-      img: ${{ env.IMAGE_BASENAME }}:${{ steps.dockertag.outputs.img_tag }}
-      module: ${{ matrix.module }}
     steps:
       - name: Checkout latest code
         uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6 # ratchet:actions/checkout@v2
@@ -77,15 +74,9 @@ jobs:
         run: gradle --init-script init.gradle cyclonedxBom
       - name: Attest image
         run: cosign attest --yes --predicate ./wonderwalled-${{ matrix.module }}/build/reports/bom.json --type cyclonedx ${{ env.IMAGE_BASENAME }}@${{ steps.build-push.outputs.digest }}
-  deploy:
-    name: Deploy to dev-gcp
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6 # ratchet:actions/checkout@v2
       - uses: nais/deploy/actions/deploy@fff9ae049178e5d3dca5c9600cf78acce63c0708 # ratchet:nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
-          RESOURCE: .nais/${{ needs.build.outputs.module }}.yaml
-          IMAGE: ${{ needs.build.outputs.img }}
+          RESOURCE: .nais/${{ matrix.module }}.yaml
+          IMAGE: ${{ env.IMAGE_BASENAME }}:${{ steps.dockertag.outputs.img_tag }}
