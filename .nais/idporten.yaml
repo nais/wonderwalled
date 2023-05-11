@@ -36,3 +36,5 @@ spec:
     enabled: true
     sidecar:
       enabled: true
+  tokenx:
+    enabled: true

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.submitForm
 import io.ktor.http.Parameters
+import io.nais.common.AccessToken
 import io.nais.common.defaultHttpClient
 
 class AzureAdClient(
@@ -43,13 +44,3 @@ class AzureAdClient(
             }
         )
 }
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class AccessToken(
-    @JsonProperty("access_token")
-    val accessToken: String,
-    @JsonProperty("expires_in")
-    val expiresIn: Int,
-    @JsonProperty("token_type")
-    val tokenType: String
-)
