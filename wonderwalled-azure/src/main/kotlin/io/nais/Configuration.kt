@@ -25,6 +25,7 @@ data class Configuration(
 ) {
     data class Azure(
         val clientId: String = config[Key("azure.app.client.id", stringType)],
+        val clientSecret: String = config[Key("azure.app.client.secret", stringType)],
         val wellKnownConfigurationUrl: String = config[Key("azure.app.well.known.url", stringType)],
         val openIdConfiguration: OpenIdConfiguration = defaultHttpClient().getOpenIdConfiguration(wellKnownConfigurationUrl)
     )
