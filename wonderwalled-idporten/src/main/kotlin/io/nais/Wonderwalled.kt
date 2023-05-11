@@ -10,6 +10,7 @@ import io.ktor.auth.jwt.jwt
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.host
 import io.ktor.request.path
+import io.ktor.request.uri
 import io.ktor.response.respond
 import io.ktor.response.respondRedirect
 import io.ktor.routing.get
@@ -56,7 +57,7 @@ fun Application.wonderwalled(config: Configuration) {
 
                 // redirect to login endpoint (wonderwall) and indicate that the user should be redirected back
                 // to the original request path after authentication
-                call.respondRedirect("$ingress/oauth2/login?redirect=${call.request.path()}")
+                call.respondRedirect("$ingress/oauth2/login?redirect=${call.request.uri}")
             }
         }
     }

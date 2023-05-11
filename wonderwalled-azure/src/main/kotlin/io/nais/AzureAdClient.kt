@@ -18,6 +18,17 @@ class AzureAdClient(
             formParameters = formParameters
         )
 
+    // Service-to-service access token request (client credentials grant)
+    suspend fun getMachineToMachineAccessToken(audience: String): AccessToken =
+        fetchAccessToken(
+            Parameters.build {
+                append("client_id", config.clientId)
+                append("client_secret", config.clientSecret)
+                append("scope", "api://$audience/.default")
+                append("grant_type", "client_credentials")
+            }
+        )
+
     // Service-to-service access token request (on-behalf-of flow)
     suspend fun getOnBehalfOfAccessToken(audience: String, accessToken: String): AccessToken =
         fetchAccessToken(

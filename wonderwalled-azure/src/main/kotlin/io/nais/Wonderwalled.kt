@@ -13,6 +13,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.request.host
 import io.ktor.request.path
+import io.ktor.request.queryString
+import io.ktor.request.uri
 import io.ktor.response.respond
 import io.ktor.response.respondBytes
 import io.ktor.response.respondRedirect
@@ -62,7 +64,7 @@ fun Application.wonderwalled(config: Configuration) {
 
                 // redirect to login endpoint (wonderwall) and indicate that the user should be redirected back
                 // to the original request path after authentication
-                call.respondRedirect("$ingress/oauth2/login?redirect=${call.request.path()}")
+                call.respondRedirect("$ingress/oauth2/login?redirect=${call.request.uri}")
             }
         }
     }
@@ -97,6 +99,21 @@ fun Application.wonderwalled(config: Configuration) {
                     try {
                         val oboToken = azureAdClient.getOnBehalfOfAccessToken(audience, token)
                         call.respond(oboToken)
+                    } catch (e: ClientRequestException) {
+                        call.respondBytes(e.response.readBytes(), e.response.contentType(), e.response.status)
+                    }
+                }
+
+                get("m2m") {
+                    val audience = call.request.queryParameters["aud"]
+                    if (audience == null) {
+                        call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
+                        return@get
+                    }
+
+                    try {
+                        val token = azureAdClient.getMachineToMachineAccessToken(audience)
+                        call.respond(token)
                     } catch (e: ClientRequestException) {
                         call.respondBytes(e.response.readBytes(), e.response.contentType(), e.response.status)
                     }
