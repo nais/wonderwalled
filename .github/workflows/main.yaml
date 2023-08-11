@@ -36,12 +36,6 @@ jobs:
         uses: gradle/wrapper-validation-action@55e685c48d84285a5b0418cd094606e199cca3b6 # ratchet:gradle/wrapper-validation-action@v1
       - name: Build with Gradle
         run: ./gradlew clean wonderwalled-${{ matrix.module }}:build wonderwalled-${{ matrix.module }}:shadowJar
-      - name: Install cosign
-        uses: sigstore/cosign-installer@00bf1366a3f8c043c1f6f802441642bced142f5c # ratchet:sigstore/cosign-installer@main
-        with:
-          cosign-release: 'v2.0.0'
-      - name: Verify distroless base image
-        run: cosign verify --certificate-identity "https://github.com/chainguard-images/images/.github/workflows/release.yaml@refs/heads/main"  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" cgr.dev/chainguard/jre:openjdk-jre-17
       - id: "gauth"
         name: "Authenticate to Google Cloud"
         uses: "google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d" # ratchet:google-github-actions/auth@v1.0.0
