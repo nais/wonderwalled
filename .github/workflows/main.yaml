@@ -3,9 +3,6 @@ on:
   push:
     branches:
       - master
-env:
-  IMAGE_BASENAME: "europe-north1-docker.pkg.dev/nais-io/nais/images/wonderwalled"
-  REGISTRY: "europe-north1-docker.pkg.dev/nais-io/nais/images"
 jobs:
   build:
     name: Build and push
@@ -36,57 +33,25 @@ jobs:
         uses: gradle/wrapper-validation-action@55e685c48d84285a5b0418cd094606e199cca3b6 # ratchet:gradle/wrapper-validation-action@v1
       - name: Build with Gradle
         run: ./gradlew clean wonderwalled-${{ matrix.module }}:build wonderwalled-${{ matrix.module }}:shadowJar
-      - id: "gauth"
-        name: "Authenticate to Google Cloud"
-        uses: "google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d" # ratchet:google-github-actions/auth@v1.0.0
+      - uses: nais/platform-build-push-sign@fb7da39ee56c8904ed15c02705a1780cb278a65b # ratchet:nais/platform-build-push-sign@main
+        id: build_push_sign
         with:
-          workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: "gh-wonderwalled@nais-io.iam.gserviceaccount.com"
-          token_format: "access_token"
-      - name: Login to Google Artifact Registry
-        uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7 # ratchet:docker/login-action@v1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: oauth2accesstoken
-          password: "${{ steps.gauth.outputs.access_token }}"
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18 # ratchet:docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c # ratchet:docker/setup-buildx-action@v2
-      - name: Generate Docker image tag
-        id: dockertag
-        run: echo "img_tag=$(git rev-parse --short HEAD)-$MODULE" >> ${GITHUB_OUTPUT}
-        env:
-          MODULE: ${{ matrix.module }}
-      - name: Build and push Docker image
-        id: build-push
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671 # ratchet:docker/build-push-action@v4
-        with:
-          context: ./wonderwalled-${{ matrix.module }}
-          file: ./wonderwalled-${{ matrix.module }}/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          pull: true
+          name: ./wonderwalled-${{ matrix.module }}
+          dockerfile: ./wonderwalled-${{ matrix.module }}/Dockerfile
+          google_service_account: gh-wonderwalled
+          multi-platform: true
           push: true
-          tags: ${{ env.IMAGE_BASENAME }}:${{ steps.dockertag.outputs.img_tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-      - name: Sign the container image
-        run: cosign sign --yes ${{ env.IMAGE_BASENAME }}@${{ steps.build-push.outputs.digest }}
-      - name: Create SBOM
-        run: gradle --init-script init.gradle cyclonedxBom
-      - name: Attest image
-        run: cosign attest --yes --predicate ./wonderwalled-${{ matrix.module }}/build/reports/bom.json --type cyclonedx ${{ env.IMAGE_BASENAME }}@${{ steps.build-push.outputs.digest }}
+          workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
       - uses: nais/deploy/actions/deploy@fff9ae049178e5d3dca5c9600cf78acce63c0708 # ratchet:nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: .nais/${{ matrix.module }}.yaml,.nais/${{ matrix.module }}-token-generator.yaml
-          IMAGE: ${{ env.IMAGE_BASENAME }}:${{ steps.dockertag.outputs.img_tag }}
+          IMAGE: ${{ steps.build_push_sign.outputs.version }}
       - uses: nais/deploy/actions/deploy@fff9ae049178e5d3dca5c9600cf78acce63c0708 # ratchet:nais/deploy/actions/deploy@v1
         if: matrix.module == 'azure'
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: .nais/azure-token-generator-nav.yaml
-          IMAGE: ${{ env.IMAGE_BASENAME }}:${{ steps.dockertag.outputs.img_tag }}
+          IMAGE: ${{ steps.build_push_sign.outputs.version }}
