@@ -37,6 +37,7 @@ jobs:
         id: build_push_sign
         with:
           name: wonderwalled-${{ matrix.module }}
+          context: ./wonderwalled-${{ matrix.module }}
           dockerfile: ./wonderwalled-${{ matrix.module }}/Dockerfile
           google_service_account: gh-wonderwalled
           multi-platform: true
