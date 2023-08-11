@@ -47,11 +47,11 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: .nais/${{ matrix.module }}.yaml,.nais/${{ matrix.module }}-token-generator.yaml
-          IMAGE: ${{ steps.build_push_sign.outputs.version }}
+          IMAGE: ${{ steps.build_push_sign.outputs.tag }}
       - uses: nais/deploy/actions/deploy@fff9ae049178e5d3dca5c9600cf78acce63c0708 # ratchet:nais/deploy/actions/deploy@v1
         if: matrix.module == 'azure'
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: .nais/azure-token-generator-nav.yaml
-          IMAGE: ${{ steps.build_push_sign.outputs.version }}
+          IMAGE: ${{ steps.build_push_sign.outputs.tag }}
