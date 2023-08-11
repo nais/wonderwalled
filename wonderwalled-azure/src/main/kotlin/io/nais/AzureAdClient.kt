@@ -25,7 +25,7 @@ class AzureAdClient(
             Parameters.build {
                 append("client_id", config.clientId)
                 append("client_secret", config.clientSecret)
-                append("scope", "api://$audience/.default")
+                append("scope", audience.toScope())
                 append("grant_type", "client_credentials")
             }
         )
@@ -36,7 +36,7 @@ class AzureAdClient(
             Parameters.build {
                 append("client_id", config.clientId)
                 append("client_secret", config.clientSecret)
-                append("scope", "api://$audience/.default")
+                append("scope", audience.toScope())
                 append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
                 append("requested_token_use", "on_behalf_of")
                 append("assertion", accessToken)
@@ -44,3 +44,5 @@ class AzureAdClient(
             }
         )
 }
+
+private fun String.toScope(): String = "api://${this.replace(":", ".")}/.default"

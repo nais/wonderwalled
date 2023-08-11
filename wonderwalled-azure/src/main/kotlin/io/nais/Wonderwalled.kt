@@ -12,8 +12,6 @@ import io.ktor.client.statement.readBytes
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.request.host
-import io.ktor.request.path
-import io.ktor.request.queryString
 import io.ktor.request.uri
 import io.ktor.response.respond
 import io.ktor.response.respondBytes
