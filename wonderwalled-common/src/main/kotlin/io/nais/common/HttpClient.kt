@@ -10,6 +10,7 @@ import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.runBlocking
 
 fun defaultHttpClient() = HttpClient(Apache) {
+    expectSuccess = true
     install(ContentNegotiation) {
         jackson {
             deserializationConfig.apply {
