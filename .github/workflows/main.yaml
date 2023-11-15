@@ -15,25 +15,25 @@ jobs:
         module: [azure, idporten]
     steps:
       - name: Checkout latest code
-        uses: actions/checkout@dc323e67f16fb5f7663d20ff7941f27f5809e9b6 # ratchet:actions/checkout@v2
-      - name: Set up JDK 17
-        uses: actions/setup-java@f0bb91606209742fe3ea40199be2f3ef195ecabf # ratchet:actions/setup-java@v2
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # ratchet:actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # ratchet:actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
       - name: Setup Gradle wrapper cache
-        uses: actions/cache@2b250bc32ad02700b996b496c14ac8c2840a2991 # ratchet:actions/cache@v2
+        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # ratchet:actions/cache@v3
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-wrapper-
       - name: Verify Gradle wrapper checksum
-        uses: gradle/wrapper-validation-action@55e685c48d84285a5b0418cd094606e199cca3b6 # ratchet:gradle/wrapper-validation-action@v1
+        uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4 # ratchet:gradle/wrapper-validation-action@v1
       - name: Build with Gradle
         run: ./gradlew clean wonderwalled-${{ matrix.module }}:build wonderwalled-${{ matrix.module }}:shadowJar
-      - uses: nais/platform-build-push-sign@fb7da39ee56c8904ed15c02705a1780cb278a65b # ratchet:nais/platform-build-push-sign@main
+      - uses: nais/platform-build-push-sign@c59f563da57e27f2f30defca0c20f51f629ff2cf # ratchet:nais/platform-build-push-sign@main
         id: build_push_sign
         with:
           name: wonderwalled-${{ matrix.module }}
@@ -43,7 +43,7 @@ jobs:
           multi-platform: true
           push: true
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
-      - uses: nais/deploy/actions/deploy@fff9ae049178e5d3dca5c9600cf78acce63c0708 # ratchet:nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@6b2377513f382f7ad0db356347ca2a7041ccfcea # ratchet:nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp

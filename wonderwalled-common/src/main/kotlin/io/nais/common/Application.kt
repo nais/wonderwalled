@@ -1,20 +1,20 @@
 package io.nais.common
 
 import com.fasterxml.jackson.databind.SerializationFeature
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.jackson.jackson
-import io.ktor.request.path
-import io.ktor.response.respond
-import io.ktor.response.respondRedirect
-import io.ktor.routing.IgnoreTrailingSlash
-import io.ktor.routing.Routing
-import io.ktor.routing.get
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.serialization.jackson.jackson
+import io.ktor.server.application.Application
+import io.ktor.server.application.call
+import io.ktor.server.application.install
+import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.request.path
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondRedirect
+import io.ktor.server.routing.IgnoreTrailingSlash
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import org.slf4j.event.Level
 
 fun Application.commonSetup() {

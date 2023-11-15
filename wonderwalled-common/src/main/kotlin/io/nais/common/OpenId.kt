@@ -17,7 +17,7 @@ data class OpenIdConfiguration(
     @JsonProperty("token_endpoint")
     val tokenEndpoint: String,
     @JsonProperty("authorization_endpoint")
-    val authorizationEndpoint: String
+    val authorizationEndpoint: String,
 ) {
     fun validate(wellKnownConfigurationUrl: String) {
         val resolvedOpenIDAuthority: String = this.issuer.removeSuffix("/") + WELL_KNOWN_OPENID_CONFIGURATION_PATH
@@ -26,13 +26,16 @@ data class OpenIdConfiguration(
         if (resolvedOpenIDAuthority != wellKnownConfigurationUrl && resolvedOAuthAuthority != wellKnownConfigurationUrl) {
             throw invalidOpenIdConfigurationException(
                 expected = listOf(resolvedOpenIDAuthority, resolvedOAuthAuthority),
-                got = wellKnownConfigurationUrl
+                got = wellKnownConfigurationUrl,
             )
         }
     }
 }
 
-private fun invalidOpenIdConfigurationException(expected: List<String>, got: String): RuntimeException {
+private fun invalidOpenIdConfigurationException(
+    expected: List<String>,
+    got: String,
+): RuntimeException {
     return RuntimeException("authority does not match the issuer returned by provider: got $got, expected one of $expected")
 }
 
@@ -43,5 +46,5 @@ data class AccessToken(
     @JsonProperty("expires_in")
     val expiresIn: Int,
     @JsonProperty("token_type")
-    val tokenType: String
+    val tokenType: String,
 )

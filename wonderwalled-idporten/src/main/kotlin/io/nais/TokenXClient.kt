@@ -7,6 +7,7 @@ import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm
 import io.ktor.http.Parameters
 import io.nais.common.AccessToken
@@ -22,8 +23,8 @@ class TokenXClient(
     private suspend inline fun fetchAccessToken(formParameters: Parameters): AccessToken =
         httpClient.submitForm(
             url = config.openIdConfiguration.tokenEndpoint,
-            formParameters = formParameters
-        )
+            formParameters = formParameters,
+        ).body()
 
     private fun clientAssertion(): String {
         val now = Date.from(Instant.now())
@@ -45,12 +46,15 @@ class TokenXClient(
             JWSHeader.Builder(JWSAlgorithm.RS256)
                 .keyID(config.rsaKey.keyID)
                 .type(JOSEObjectType.JWT).build(),
-            this
+            this,
         ).apply {
             sign(RSASSASigner(config.rsaKey.toPrivateKey()))
         }
 
-    suspend fun getOnBehalfOfAccessToken(audience: String, accessToken: String): AccessToken =
+    suspend fun getOnBehalfOfAccessToken(
+        audience: String,
+        accessToken: String,
+    ): AccessToken =
         fetchAccessToken(
             Parameters.build {
                 append("grant_type", "urn:ietf:params:oauth:grant-type:token-exchange")
@@ -59,6 +63,6 @@ class TokenXClient(
                 append("subject_token_type", "urn:ietf:params:oauth:token-type:jwt")
                 append("subject_token", accessToken)
                 append("audience", audience)
-            }
+            },
         )
 }

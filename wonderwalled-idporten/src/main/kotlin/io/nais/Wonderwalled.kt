@@ -1,31 +1,31 @@
 package io.nais
 
 import com.auth0.jwk.JwkProviderBuilder
-import io.ktor.application.Application
-import io.ktor.application.call
-import io.ktor.auth.authenticate
-import io.ktor.auth.authentication
-import io.ktor.auth.jwt.JWTPrincipal
-import io.ktor.auth.jwt.jwt
-import io.ktor.client.features.ClientRequestException
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.readBytes
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.request.host
-import io.ktor.request.uri
-import io.ktor.response.respond
-import io.ktor.response.respondBytes
-import io.ktor.response.respondRedirect
-import io.ktor.routing.get
-import io.ktor.routing.route
-import io.ktor.routing.routing
+import io.ktor.server.application.Application
+import io.ktor.server.application.call
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.authentication
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.request.host
+import io.ktor.server.request.uri
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
+import io.ktor.server.response.respondRedirect
+import io.ktor.server.routing.get
+import io.ktor.server.routing.route
+import io.ktor.server.routing.routing
 import io.nais.common.bearerToken
 import io.nais.common.commonSetup
 import io.nais.common.getTokenInfo
 import io.nais.common.requestHeaders
-import java.net.URL
+import java.net.URI
 import java.util.concurrent.TimeUnit
 
 fun main() {
@@ -37,7 +37,8 @@ fun main() {
 }
 
 fun Application.wonderwalled(config: Configuration) {
-    val jwkProvider = JwkProviderBuilder(URL(config.idporten.openIdConfiguration.jwksUri))
+    val jwksURL = URI.create(config.idporten.openIdConfiguration.jwksUri).toURL()
+    val jwkProvider = JwkProviderBuilder(jwksURL)
         .cached(10, 1, TimeUnit.HOURS)
         .rateLimited(10, 1, TimeUnit.MINUTES)
         .build()
