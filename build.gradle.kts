@@ -3,14 +3,14 @@ object Versions {
     const val kotlinlogging = "2.0.10"
     const val ktor = "2.3.6"
     const val logstash = "7.4"
-    const val logback = "1.4.11"
-    const val nimbusJoseJwt = "9.37.1"
+    const val logback = "1.4.14"
+    const val nimbusJoseJwt = "9.37.2"
 }
 
 plugins {
     kotlin("jvm") version "1.9.20"
-    id("org.jmailen.kotlinter") version "4.0.1"
-    id("com.github.ben-manes.versions") version "0.49.0"
+    id("org.jmailen.kotlinter") version "4.1.0"
+    id("com.github.ben-manes.versions") version "0.50.0"
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
 }
 
