@@ -1,16 +1,16 @@
 object Versions {
     const val konfig = "1.6.10.0"
     const val kotlinlogging = "2.0.10"
-    const val ktor = "2.3.6"
+    const val ktor = "2.3.9"
     const val logstash = "7.4"
-    const val logback = "1.4.14"
-    const val nimbusJoseJwt = "9.37.2"
+    const val logback = "1.5.3"
+    const val nimbusJoseJwt = "9.37.3"
 }
 
 plugins {
-    kotlin("jvm") version "1.9.20"
-    id("org.jmailen.kotlinter") version "4.1.0"
-    id("com.github.ben-manes.versions") version "0.50.0"
+    kotlin("jvm") version "1.9.22"
+    id("org.jmailen.kotlinter") version "4.2.0"
+    id("com.github.ben-manes.versions") version "0.51.0"
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
 }
 
