@@ -30,7 +30,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-wrapper-
       - name: Verify Gradle wrapper checksum
-        uses: gradle/wrapper-validation-action@b5418f5a58f5fd2eb486dd7efb368fe7be7eae45 # ratchet:gradle/wrapper-validation-action@v2
+        uses: gradle/wrapper-validation-action@460a3ca55fc5d559238a0efc7fa9f7465df8585d # ratchet:gradle/wrapper-validation-action@v3
       - name: Build with Gradle
         run: ./gradlew clean wonderwalled-${{ matrix.module }}:build wonderwalled-${{ matrix.module }}:shadowJar
       - uses: nais/platform-build-push-sign@main # ratchet:exclude
@@ -43,7 +43,7 @@ jobs:
           multi-platform: true
           push: true
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
-      - uses: nais/deploy/actions/deploy@v1 # ratchet:exclude
+      - uses: nais/deploy/actions/deploy@v2 # ratchet:exclude
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
