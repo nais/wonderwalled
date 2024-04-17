@@ -9,19 +9,21 @@ import io.ktor.client.request.get
 import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.runBlocking
 
-fun defaultHttpClient() = HttpClient(Apache) {
-    expectSuccess = true
-    install(ContentNegotiation) {
-        jackson {
-            deserializationConfig.apply {
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+fun defaultHttpClient() =
+    HttpClient(Apache) {
+        expectSuccess = true
+        install(ContentNegotiation) {
+            jackson {
+                deserializationConfig.apply {
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
             }
         }
     }
-}
 
-fun HttpClient.getOpenIdConfiguration(url: String): OpenIdConfiguration = runBlocking {
-    get(url)
-        .body<OpenIdConfiguration>()
-        .also { it.validate(url) }
-}
+fun HttpClient.getOpenIdConfiguration(url: String): OpenIdConfiguration =
+    runBlocking {
+        get(url)
+            .body<OpenIdConfiguration>()
+            .also { it.validate(url) }
+    }

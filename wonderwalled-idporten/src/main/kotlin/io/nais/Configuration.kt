@@ -20,24 +20,25 @@ data class Configuration(
     val idporten: IdPorten = IdPorten(),
     val tokenx: TokenX = TokenX(),
     // optional, generally only needed when running locally
-    val ingress: String = config.getOrElse(
-        key = Key("wonderwall.ingress", stringType),
-        default = "",
-    ),
+    val ingress: String =
+        config.getOrElse(
+            key = Key("wonderwall.ingress", stringType),
+            default = "",
+        ),
 ) {
     data class IdPorten(
         val clientId: String = config[Key("idporten.client.id", stringType)],
         val wellKnownConfigurationUrl: String = config[Key("idporten.well.known.url", stringType)],
-        val openIdConfiguration: OpenIdConfiguration = defaultHttpClient()
-            .getOpenIdConfiguration(wellKnownConfigurationUrl),
+        val openIdConfiguration: OpenIdConfiguration =
+            defaultHttpClient().getOpenIdConfiguration(wellKnownConfigurationUrl),
     )
 
     data class TokenX(
         val clientId: String = config[Key("token.x.client.id", stringType)],
         val privateJwk: String = config[Key("token.x.private.jwk", stringType)],
         val wellKnownConfigurationUrl: String = config[Key("token.x.well.known.url", stringType)],
-        val openIdConfiguration: OpenIdConfiguration = defaultHttpClient()
-            .getOpenIdConfiguration(wellKnownConfigurationUrl),
+        val openIdConfiguration: OpenIdConfiguration =
+            defaultHttpClient().getOpenIdConfiguration(wellKnownConfigurationUrl),
         val rsaKey: RSAKey = RSAKey.parse(privateJwk),
     )
 }

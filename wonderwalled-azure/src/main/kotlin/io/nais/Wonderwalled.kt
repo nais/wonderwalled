@@ -38,10 +38,11 @@ fun main() {
 
 fun Application.wonderwalled(config: Configuration) {
     val jwksUrl = URI.create(config.azure.openIdConfiguration.jwksUri).toURL()
-    val jwkProvider = JwkProviderBuilder(jwksUrl)
-        .cached(10, 1, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
+    val jwkProvider =
+        JwkProviderBuilder(jwksUrl)
+            .cached(10, 1, TimeUnit.HOURS)
+            .rateLimited(10, 1, TimeUnit.MINUTES)
+            .build()
 
     commonSetup()
 
@@ -57,9 +58,10 @@ fun Application.wonderwalled(config: Configuration) {
 
             // challenge is called if the request authentication fails or is not provided
             challenge { _, _ ->
-                val ingress = config.ingress.ifEmpty(defaultValue = {
-                    "${call.request.local.scheme}://${call.request.host()}"
-                })
+                val ingress =
+                    config.ingress.ifEmpty(defaultValue = {
+                        "${call.request.local.scheme}://${call.request.host()}"
+                    })
 
                 // redirect to login endpoint (wonderwall) and indicate that the user should be redirected back
                 // to the original request path after authentication
