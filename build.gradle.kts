@@ -1,14 +1,11 @@
-object Versions {
-    const val konfig = "1.6.10.0"
-    const val kotlinlogging = "2.0.10"
-    const val ktor = "2.3.10"
-    const val logstash = "7.4"
-    const val logback = "1.5.5"
-    const val nimbusJoseJwt = "9.37.3"
-}
+val konfigVersion = "1.6.10.0"
+val ktorVersion = "2.3.11"
+val logstashVersion = "7.4"
+val logbackVersion = "1.5.6"
+val nimbusJoseJwtVersion = "9.40"
 
 plugins {
-    kotlin("jvm") version "1.9.24"
+    kotlin("jvm") version "2.0.0"
     id("org.jmailen.kotlinter") version "4.3.0"
     id("com.github.ben-manes.versions") version "0.51.0"
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
@@ -49,17 +46,17 @@ subprojects {
 
     dependencies {
         implementation(kotlin("stdlib"))
-        implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
-        implementation("io.ktor:ktor-server:${Versions.ktor}")
-        implementation("io.ktor:ktor-server-auth-jwt:${Versions.ktor}")
-        implementation("io.ktor:ktor-server-content-negotiation:${Versions.ktor}")
-        implementation("io.ktor:ktor-serialization-jackson:${Versions.ktor}")
-        implementation("io.ktor:ktor-client-core:${Versions.ktor}")
-        implementation("io.ktor:ktor-client-apache:${Versions.ktor}")
-        implementation("io.ktor:ktor-client-content-negotiation:${Versions.ktor}")
-        implementation("com.natpryce:konfig:${Versions.konfig}")
-        implementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusJoseJwt}")
-        implementation("net.logstash.logback:logstash-logback-encoder:${Versions.logstash}")
-        runtimeOnly("ch.qos.logback:logback-classic:${Versions.logback}")
+        implementation("io.ktor:ktor-server-netty:${ktorVersion}")
+        implementation("io.ktor:ktor-server:${ktorVersion}")
+        implementation("io.ktor:ktor-server-auth-jwt:${ktorVersion}")
+        implementation("io.ktor:ktor-server-content-negotiation:${ktorVersion}")
+        implementation("io.ktor:ktor-serialization-jackson:${ktorVersion}")
+        implementation("io.ktor:ktor-client-core:${ktorVersion}")
+        implementation("io.ktor:ktor-client-apache:${ktorVersion}")
+        implementation("io.ktor:ktor-client-content-negotiation:${ktorVersion}")
+        implementation("com.natpryce:konfig:${konfigVersion}")
+        implementation("com.nimbusds:nimbus-jose-jwt:${nimbusJoseJwtVersion}")
+        implementation("net.logstash.logback:logstash-logback-encoder:${logstashVersion}")
+        runtimeOnly("ch.qos.logback:logback-classic:${logbackVersion}")
     }
 }
