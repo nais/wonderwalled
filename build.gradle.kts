@@ -1,5 +1,5 @@
 val konfigVersion = "1.6.10.0"
-val ktorVersion = "2.3.11"
+val ktorVersion = "2.3.12"
 val logstashVersion = "7.4"
 val logbackVersion = "1.5.6"
 val nimbusJoseJwtVersion = "9.40"
@@ -46,13 +46,13 @@ subprojects {
 
     dependencies {
         implementation(kotlin("stdlib"))
-        implementation("io.ktor:ktor-server-netty:${ktorVersion}")
         implementation("io.ktor:ktor-server:${ktorVersion}")
+        implementation("io.ktor:ktor-server-cio:${ktorVersion}")
         implementation("io.ktor:ktor-server-auth-jwt:${ktorVersion}")
         implementation("io.ktor:ktor-server-content-negotiation:${ktorVersion}")
         implementation("io.ktor:ktor-serialization-jackson:${ktorVersion}")
+        implementation("io.ktor:ktor-client-cio:${ktorVersion}")
         implementation("io.ktor:ktor-client-core:${ktorVersion}")
-        implementation("io.ktor:ktor-client-apache:${ktorVersion}")
         implementation("io.ktor:ktor-client-content-negotiation:${ktorVersion}")
         implementation("com.natpryce:konfig:${konfigVersion}")
         implementation("com.nimbusds:nimbus-jose-jwt:${nimbusJoseJwtVersion}")

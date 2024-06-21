@@ -8,7 +8,7 @@ jobs:
     name: Build and push
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     strategy:
       matrix:
@@ -22,17 +22,23 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
-      - name: Setup Gradle wrapper cache
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # ratchet:actions/cache@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@99b8673ff64fbf99d8d325f52d9a5bdedb8483e9 # ratchet:actions/setup-java@v4
         with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-wrapper-
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
       - name: Verify Gradle wrapper checksum
-        uses: gradle/wrapper-validation-action@9ba54b687bf0f59b62abbf91e0d60de082e8ebc4 # ratchet:gradle/wrapper-validation-action@v3
+        uses: gradle/actions/wrapper-validation@dbbdc275be76ac10734476cc723d82dfe7ec6eda # ratchet:gradle/actions/wrapper-validation@v3
+      - name: Setup Gradle to generate and submit dependency graphs
+        uses: gradle/actions/setup-gradle@dbbdc275be76ac10734476cc723d82dfe7ec6eda # ratchet:gradle/actions/setup-gradle@v3
+        with:
+          dependency-graph: generate-and-submit
       - name: Build with Gradle
         run: ./gradlew clean wonderwalled-${{ matrix.module }}:build wonderwalled-${{ matrix.module }}:shadowJar
+        env:
+          ORG_GRADLE_PROJECT_githubUser: x-access-token
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - uses: nais/platform-build-push-sign@main # ratchet:exclude
         id: build_push_sign
         with:

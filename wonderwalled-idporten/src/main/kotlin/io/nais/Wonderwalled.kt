@@ -11,8 +11,8 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import io.ktor.server.request.host
 import io.ktor.server.request.uri
 import io.ktor.server.response.respond
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit
 fun main() {
     val config = Configuration()
 
-    embeddedServer(Netty, port = config.port) {
+    embeddedServer(CIO, port = config.port) {
         wonderwalled(config)
     }.start(wait = true)
 }
