@@ -6,7 +6,7 @@ val nimbusJoseJwtVersion = "9.40"
 
 plugins {
     kotlin("jvm") version "2.0.0"
-    id("org.jmailen.kotlinter") version "4.3.0"
+    id("org.jmailen.kotlinter") version "4.4.0"
     id("com.github.ben-manes.versions") version "0.51.0"
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
 }
