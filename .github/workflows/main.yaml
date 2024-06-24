@@ -24,15 +24,12 @@ jobs:
           cache: 'gradle'
       - name: Verify Gradle wrapper checksum
         uses: gradle/actions/wrapper-validation@dbbdc275be76ac10734476cc723d82dfe7ec6eda # ratchet:gradle/actions/wrapper-validation@v3
-      - name: Setup Gradle to generate and submit dependency graphs
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@dbbdc275be76ac10734476cc723d82dfe7ec6eda # ratchet:gradle/actions/setup-gradle@v3
-        with:
-          dependency-graph: generate-and-submit
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@dbbdc275be76ac10734476cc723d82dfe7ec6eda # ratchet:gradle/actions/dependency-submission@v3
       - name: Build with Gradle
         run: ./gradlew clean wonderwalled-${{ matrix.module }}:build wonderwalled-${{ matrix.module }}:shadowJar
-        env:
-          ORG_GRADLE_PROJECT_githubUser: x-access-token
-          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - uses: nais/platform-build-push-sign@main # ratchet:exclude
         id: build_push_sign
         with:
