@@ -35,9 +35,7 @@ data class OpenIdConfiguration(
 private fun invalidOpenIdConfigurationException(
     expected: List<String>,
     got: String,
-): RuntimeException {
-    return RuntimeException("authority does not match the issuer returned by provider: got $got, expected one of $expected")
-}
+): RuntimeException = RuntimeException("authority does not match the issuer returned by provider: got $got, expected one of $expected")
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class AccessToken(

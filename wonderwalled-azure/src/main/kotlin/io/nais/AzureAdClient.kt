@@ -12,10 +12,11 @@ class AzureAdClient(
     private val httpClient: HttpClient = defaultHttpClient(),
 ) {
     private suspend inline fun fetchAccessToken(formParameters: Parameters): AccessToken =
-        httpClient.submitForm(
-            url = config.openIdConfiguration.tokenEndpoint,
-            formParameters = formParameters,
-        ).body()
+        httpClient
+            .submitForm(
+                url = config.openIdConfiguration.tokenEndpoint,
+                formParameters = formParameters,
+            ).body()
 
     // Service-to-service access token request (client credentials grant)
     suspend fun getMachineToMachineAccessToken(audience: String): AccessToken =

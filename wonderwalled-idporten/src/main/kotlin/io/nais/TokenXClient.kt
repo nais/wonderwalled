@@ -21,14 +21,16 @@ class TokenXClient(
     private val httpClient: HttpClient = defaultHttpClient(),
 ) {
     private suspend inline fun fetchAccessToken(formParameters: Parameters): AccessToken =
-        httpClient.submitForm(
-            url = config.openIdConfiguration.tokenEndpoint,
-            formParameters = formParameters,
-        ).body()
+        httpClient
+            .submitForm(
+                url = config.openIdConfiguration.tokenEndpoint,
+                formParameters = formParameters,
+            ).body()
 
     private fun clientAssertion(): String {
         val now = Date.from(Instant.now())
-        return JWTClaimsSet.Builder()
+        return JWTClaimsSet
+            .Builder()
             .issuer(config.clientId)
             .subject(config.clientId)
             .audience(config.openIdConfiguration.tokenEndpoint)
@@ -43,9 +45,11 @@ class TokenXClient(
 
     private fun JWTClaimsSet.sign(): SignedJWT =
         SignedJWT(
-            JWSHeader.Builder(JWSAlgorithm.RS256)
+            JWSHeader
+                .Builder(JWSAlgorithm.RS256)
                 .keyID(config.rsaKey.keyID)
-                .type(JOSEObjectType.JWT).build(),
+                .type(JOSEObjectType.JWT)
+                .build(),
             this,
         ).apply {
             sign(RSASSASigner(config.rsaKey.toPrivateKey()))
