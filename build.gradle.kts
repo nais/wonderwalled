@@ -1,6 +1,6 @@
 val konfigVersion = "1.6.10.0"
 val ktorVersion = "2.3.12"
-val logstashVersion = "7.4"
+val logstashVersion = "8.0"
 val logbackVersion = "1.5.6"
 val nimbusJoseJwtVersion = "9.40"
 
