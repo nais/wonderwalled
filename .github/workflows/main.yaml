@@ -22,12 +22,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
-      - name: Verify Gradle wrapper checksum
-        uses: gradle/actions/wrapper-validation@af1da67850ed9a4cedd57bfd976089dd991e2582 # ratchet:gradle/actions/wrapper-validation@v3
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # ratchet:gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # ratchet:gradle/actions/setup-gradle@v4
       - name: Generate and submit dependency graph
-        uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # ratchet:gradle/actions/dependency-submission@v3
+        uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # ratchet:gradle/actions/dependency-submission@v4
       - name: Build with Gradle
         run: ./gradlew clean wonderwalled-${{ matrix.module }}:build wonderwalled-${{ matrix.module }}:shadowJar
       - uses: nais/platform-build-push-sign@main # ratchet:exclude
