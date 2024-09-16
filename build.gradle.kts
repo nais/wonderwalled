@@ -2,7 +2,7 @@ val konfigVersion = "1.6.10.0"
 val ktorVersion = "2.3.12"
 val logstashVersion = "8.0"
 val logbackVersion = "1.5.8"
-val nimbusJoseJwtVersion = "9.40"
+val nimbusJoseJwtVersion = "9.41.1"
 
 plugins {
     kotlin("jvm") version "2.0.20"
