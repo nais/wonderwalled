@@ -2,7 +2,7 @@ package io.nais
 
 import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.readBytes
+import io.ktor.client.statement.readRawBytes
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.application.Application
@@ -101,7 +101,7 @@ fun Application.wonderwalled(config: Configuration) {
                         val oboToken = azureAdClient.getOnBehalfOfAccessToken(audience, token)
                         call.respond(oboToken)
                     } catch (e: ClientRequestException) {
-                        call.respondBytes(e.response.readBytes(), e.response.contentType(), e.response.status)
+                        call.respondBytes(e.response.readRawBytes(), e.response.contentType(), e.response.status)
                     }
                 }
 
@@ -116,7 +116,7 @@ fun Application.wonderwalled(config: Configuration) {
                         val token = azureAdClient.getMachineToMachineAccessToken(audience)
                         call.respond(token)
                     } catch (e: ClientRequestException) {
-                        call.respondBytes(e.response.readBytes(), e.response.contentType(), e.response.status)
+                        call.respondBytes(e.response.readRawBytes(), e.response.contentType(), e.response.status)
                     }
                 }
             }
