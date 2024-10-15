@@ -1,11 +1,11 @@
 val konfigVersion = "1.6.10.0"
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.0.0"
 val logstashVersion = "8.0"
-val logbackVersion = "1.5.8"
+val logbackVersion = "1.5.10"
 val nimbusJoseJwtVersion = "9.41.2"
 
 plugins {
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.0.21"
     id("org.jmailen.kotlinter") version "4.4.1"
     id("com.github.ben-manes.versions") version "0.51.0"
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
