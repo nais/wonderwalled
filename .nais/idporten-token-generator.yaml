@@ -38,3 +38,10 @@ spec:
       enabled: true
   tokenx:
     enabled: true
+  maskinporten:
+    enabled: true
+    scopes:
+      consumes:
+        - name: nav:test/api
+  texas:
+    maskinporten: true
