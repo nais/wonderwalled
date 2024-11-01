@@ -42,5 +42,5 @@ class TexasClient(
             .post(config.texasIntrospectionEndpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(TexasIntrospectionRequest(accessToken))
-            }.body<String>()
+            }.body<Map<String, Any>>()
 }
