@@ -17,3 +17,6 @@ src/generated
 node_modules/
 jspm_packages/
 dist/
+
+# custom
+.env

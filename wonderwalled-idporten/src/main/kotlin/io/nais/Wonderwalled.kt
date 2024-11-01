@@ -1,25 +1,17 @@
 package io.nais
 
 import com.auth0.jwk.JwkProviderBuilder
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.readBytes
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.server.application.Application
-import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.authentication
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.cio.CIO
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.request.host
-import io.ktor.server.request.uri
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondBytes
-import io.ktor.server.response.respondRedirect
-import io.ktor.server.routing.get
-import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
+import io.ktor.client.plugins.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.cio.*
+import io.ktor.server.engine.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.nais.common.bearerToken
 import io.nais.common.commonSetup
 import io.nais.common.getTokenInfo
@@ -46,6 +38,8 @@ fun Application.wonderwalled(config: Configuration) {
     commonSetup()
 
     val tokenXClient = TokenXClient(config.tokenx)
+
+    val texasClient = TexasClient(config.texas)
 
     authentication {
         jwt {
@@ -103,6 +97,16 @@ fun Application.wonderwalled(config: Configuration) {
                         call.respondBytes(e.response.readBytes(), e.response.contentType(), e.response.status)
                     }
                 }
+            }
+        }
+
+        route("api") {
+            get("maskinporten") {
+                call.respond(
+                    texasClient.introspect(
+                        texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken
+                    )
+                )
             }
         }
     }
