@@ -46,13 +46,15 @@ subprojects {
             dependsOn("formatKotlin")
         }
 
-        withType<JavaExec> {
-            environment = file("$rootDir/.env").readLines()
-                .filterNot { it.isEmpty() || it.startsWith("#") }
-                .associate {
+        withType<JavaExec>().named("run") {
+            environment = file("$rootDir/.env")
+                .takeIf { it.exists() }
+                ?.readLines()
+                ?.filterNot { it.isEmpty() || it.startsWith("#") }
+                ?.associate {
                     val (key, value) = it.split("=")
                     key to value.trimQuotes()
-                }
+                } ?: emptyMap()
         }
     }
 
