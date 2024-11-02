@@ -12,7 +12,10 @@ jobs:
       id-token: write
     strategy:
       matrix:
-        module: [azure, idporten, maskinporten]
+        module:
+          - azure
+          - idporten
+          #- maskinporten
         include:
           - module: azure
             token-generator: true
