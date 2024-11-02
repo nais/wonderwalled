@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.daemon.common.trimQuotes
+
 val konfigVersion = "1.6.10.0"
 val ktorVersion = "3.0.0"
 val logstashVersion = "8.0"
@@ -5,6 +7,7 @@ val logbackVersion = "1.5.12"
 val nimbusJoseJwtVersion = "9.41.2"
 
 plugins {
+    application
     kotlin("jvm") version "2.0.21"
     id("org.jmailen.kotlinter") version "4.4.1"
     id("com.github.ben-manes.versions") version "0.51.0"
@@ -21,9 +24,14 @@ allprojects {
 }
 
 subprojects {
+    apply(plugin = "application")
     apply(plugin = "kotlin")
     apply(plugin = "org.jmailen.kotlinter")
     apply(plugin = "com.gradleup.shadow")
+
+    application {
+        mainClass.set("io.nais.WonderwalledKt")
+    }
 
     tasks {
         kotlin {
@@ -36,6 +44,15 @@ subprojects {
         }
         lintKotlin {
             dependsOn("formatKotlin")
+        }
+
+        withType<JavaExec> {
+            environment = file("$rootDir/.env").readLines()
+                .filterNot { it.isEmpty() || it.startsWith("#") }
+                .associate {
+                    val (key, value) = it.split("=")
+                    key to value.trimQuotes()
+                }
         }
     }
 

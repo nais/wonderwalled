@@ -7,14 +7,21 @@ Basic toy API in Ktor that showcases usage of Wonderwall from a backend applicat
 
 Requires (almost) all requests received to contain a Bearer token issued by the configured Identity Provider.
 
-[ID-porten](idporten):
-- Expects the token to contain a claim `client_id` with a value that matches the client ID of the application's client.
+[ID-porten](wonderwalled-idporten):
+
+- Expects the token to contain a claim `aud` with a value that matches the client ID of the application's client.
 - Supports Token Exchange using TokenX.
 
-[Azure AD](azure):
+[Azure AD](wonderwalled-azure):
+
 - Expects the token to contain a claim `aud` with a value that matches the client ID of the application's client.
 - Supports the On-Behalf-Of flow.
 - Supports the Client Credentials flow.
+
+[Maskinporten](wonderwalled-maskinporten):
+
+- Requires login with Azure AD.
+- API for fetching machine-to-machine tokens from Maskinporten.
 
 ## Endpoints:
 
@@ -26,3 +33,45 @@ Requires (almost) all requests received to contain a Bearer token issued by the 
   - `/api/me` - prints all claims for the token received
   - `/api/obo?aud=<cluster>:<namespace>:<app>` - exchanges the subject token for the given `aud` (audience)
   - `/api/m2m?aud=<cluster>:<namespace>:<app>` - (Azure only) fetches a machine-to-machine token for the given `aud` (audience)
+
+## Development
+
+Requires JDK installed, minimum version 21.
+
+Start required dependencies:
+
+```shell
+docker-compose up -d
+```
+
+This starts up:
+
+- wonderwall at <http://localhost:4000>
+- texas at <http://localhost:3000>
+- mock-oauth2-server at <http://localhost:8080>
+
+Run wonderwalled for the desired identity provider:
+
+```shell
+./gradlew wonderwalled-azure:run
+```
+
+or
+
+```shell
+./gradlew wonderwalled-idporten:run
+```
+
+or
+
+```shell
+./gradlew wonderwalled-maskinporten:run
+```
+
+Visit the endpoints at `localhost:4000` (i.e. via Wonderwall as a reverse proxy):
+
+- <http://localhost:4000>
+- <http://localhost:4000/api/headers>
+- <http://localhost:4000/api/me>
+- <http://localhost:4000/api/obo?aud=cluster:namespace:app>
+- <http://localhost:4000/api/m2m?aud=cluster:namespace:app>
