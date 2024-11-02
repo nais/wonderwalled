@@ -43,5 +43,3 @@ spec:
     scopes:
       consumes:
         - name: nav:test/api
-  texas:
-    maskinporten: true
