@@ -66,7 +66,7 @@ fun Application.wonderwalled(config: Configuration) {
 
     routing {
         get("/") {
-            call.respondRedirect("/api/maskinporten")
+            call.respondRedirect("/api/introspect")
         }
         authenticate {
             route("api") {
@@ -74,7 +74,12 @@ fun Application.wonderwalled(config: Configuration) {
                     call.respond(call.requestHeaders())
                 }
 
-                get("maskinporten") {
+                get("token") {
+                    call.respond(
+                        texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
+                    )
+                }
+                get("introspect") {
                     call.respond(
                         texasClient.introspect(
                             texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
