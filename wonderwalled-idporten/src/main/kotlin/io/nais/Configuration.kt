@@ -28,7 +28,7 @@ data class Configuration(
         ),
 ) {
     data class IdPorten(
-        val clientId: String = config[Key("idporten.client.id", stringType)],
+        val audience: String = config[Key("idporten.audience", stringType)],
         val wellKnownConfigurationUrl: String = config[Key("idporten.well.known.url", stringType)],
         val openIdConfiguration: OpenIdConfiguration =
             defaultHttpClient().getOpenIdConfiguration(wellKnownConfigurationUrl),

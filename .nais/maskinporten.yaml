@@ -1,7 +1,7 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: "wonderwalled-idporten"
+  name: "wonderwalled-maskinporten"
   namespace: "aura"
   labels:
     team: "aura"
@@ -31,10 +31,18 @@ spec:
       cpu: "5m"
       memory: "128Mi"
   ingresses:
-    - https://wonderwalled-idporten.intern.dev.nav.no
-  idporten:
-    enabled: true
+    - https://wonderwalled-maskinporten.intern.dev.nav.no
+  azure:
+    application:
+      enabled: true
+      allowAllUsers: true
+      tenant: nav.no
     sidecar:
       enabled: true
-  tokenx:
+  maskinporten:
     enabled: true
+    scopes:
+      consumes:
+        - name: nav:test/api
+  texas:
+    maskinporten: true

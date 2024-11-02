@@ -12,7 +12,12 @@ jobs:
       id-token: write
     strategy:
       matrix:
-        module: [azure, idporten]
+        module: [azure, idporten, maskinporten]
+        include:
+          - module: azure
+            token-generator: true
+          - module: idporten
+            token-generator: true
     steps:
       - name: Checkout latest code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4
@@ -42,5 +47,12 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
-          RESOURCE: .nais/${{ matrix.module }}.yaml,.nais/${{ matrix.module }}-token-generator.yaml
+          RESOURCE: .nais/${{ matrix.module }}.yaml
+          IMAGE: ${{ steps.build_push_sign.outputs.tag }}
+      - uses: nais/deploy/actions/deploy@v2 # ratchet:exclude
+        if: matrix.token-generator
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/${{ matrix.module }}-token-generator.yaml
           IMAGE: ${{ steps.build_push_sign.outputs.tag }}

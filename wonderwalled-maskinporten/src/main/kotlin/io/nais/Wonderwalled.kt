@@ -1,10 +1,6 @@
 package io.nais
 
 import com.auth0.jwk.JwkProviderBuilder
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.readBytes
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
@@ -15,14 +11,13 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.request.host
 import io.ktor.server.request.uri
 import io.ktor.server.response.respond
-import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import io.nais.common.bearerToken
+import io.nais.common.IdentityProvider
+import io.nais.common.TexasClient
 import io.nais.common.commonSetup
-import io.nais.common.getTokenInfo
 import io.nais.common.requestHeaders
 import java.net.URI
 import java.util.concurrent.TimeUnit
@@ -36,21 +31,21 @@ fun main() {
 }
 
 fun Application.wonderwalled(config: Configuration) {
-    val jwksURL = URI.create(config.idporten.openIdConfiguration.jwksUri).toURL()
+    val jwksURL = URI.create(config.azure.openIdConfiguration.jwksUri).toURL()
     val jwkProvider =
         JwkProviderBuilder(jwksURL)
             .cached(10, 1, TimeUnit.HOURS)
             .rateLimited(10, 1, TimeUnit.MINUTES)
             .build()
 
-    commonSetup()
+    commonSetup(withRootHandler = false)
 
-    val tokenXClient = TokenXClient(config.tokenx)
+    val texasClient = TexasClient(config.texas, IdentityProvider.MASKINPORTEN)
 
     authentication {
         jwt {
-            verifier(jwkProvider, config.idporten.openIdConfiguration.issuer) {
-                withAudience(config.idporten.audience)
+            verifier(jwkProvider, config.azure.openIdConfiguration.issuer) {
+                withAudience(config.azure.clientId)
             }
 
             validate { credentials -> JWTPrincipal(credentials.payload) }
@@ -70,37 +65,24 @@ fun Application.wonderwalled(config: Configuration) {
     }
 
     routing {
+        get("/") {
+            call.respondRedirect("/api/maskinporten")
+        }
         authenticate {
             route("api") {
                 get("headers") {
                     call.respond(call.requestHeaders())
                 }
 
-                get("me") {
-                    when (val tokenInfo = call.getTokenInfo()) {
-                        null -> call.respond(HttpStatusCode.Unauthorized, "Could not find a valid principal")
-                        else -> call.respond(tokenInfo)
-                    }
+                get("maskinporten") {
+                    call.respond(
+                        texasClient.introspect(
+                            texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
+                        ),
+                    )
                 }
-                get("obo") {
-                    val token = call.bearerToken()
-                    if (token == null) {
-                        call.respond(HttpStatusCode.Unauthorized, "missing bearer token in Authorization header")
-                        return@get
-                    }
-
-                    val audience = call.request.queryParameters["aud"]
-                    if (audience == null) {
-                        call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
-                        return@get
-                    }
-
-                    try {
-                        val oboToken = tokenXClient.getOnBehalfOfAccessToken(audience, token)
-                        call.respond(oboToken)
-                    } catch (e: ClientRequestException) {
-                        call.respondBytes(e.response.readBytes(), e.response.contentType(), e.response.status)
-                    }
+                get("*") {
+                    call.respondRedirect("/")
                 }
             }
         }

@@ -1,2 +1,2 @@
 rootProject.name = "wonderwalled"
-include("wonderwalled-common", "wonderwalled-azure", "wonderwalled-idporten")
+include("wonderwalled-common", "wonderwalled-azure", "wonderwalled-idporten", "wonderwalled-maskinporten")
