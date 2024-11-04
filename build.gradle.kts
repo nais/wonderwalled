@@ -1,17 +1,17 @@
 import org.jetbrains.kotlin.daemon.common.trimQuotes
 
 val konfigVersion = "1.6.10.0"
-val ktorVersion = "3.0.0"
+val ktorVersion = "3.0.1"
 val logstashVersion = "8.0"
 val logbackVersion = "1.5.12"
-val nimbusJoseJwtVersion = "9.41.2"
+val nimbusJoseJwtVersion = "9.45"
 
 plugins {
     application
     kotlin("jvm") version "2.0.21"
     id("org.jmailen.kotlinter") version "4.4.1"
     id("com.github.ben-manes.versions") version "0.51.0"
-    id("com.gradleup.shadow") version "8.3.3" apply false
+    id("com.gradleup.shadow") version "8.3.5" apply false
 }
 
 allprojects {
