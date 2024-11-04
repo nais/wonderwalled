@@ -11,7 +11,9 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
-enum class IdentityProvider(val alias: String) {
+enum class IdentityProvider(
+    val alias: String,
+) {
     MASKINPORTEN("maskinporten"),
 }
 

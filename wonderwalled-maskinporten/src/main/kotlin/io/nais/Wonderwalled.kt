@@ -38,7 +38,7 @@ fun Application.wonderwalled(config: Configuration) {
             .rateLimited(10, 1, TimeUnit.MINUTES)
             .build()
 
-    commonSetup(withRootHandler = false)
+    commonSetup()
 
     val texasClient = TexasClient(config.texas, IdentityProvider.MASKINPORTEN)
 
@@ -65,9 +65,6 @@ fun Application.wonderwalled(config: Configuration) {
     }
 
     routing {
-        get("/") {
-            call.respondRedirect("/api/introspect")
-        }
         authenticate {
             route("api") {
                 get("headers") {
@@ -75,9 +72,7 @@ fun Application.wonderwalled(config: Configuration) {
                 }
 
                 get("token") {
-                    call.respond(
-                        texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
-                    )
+                    call.respond(texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api"))
                 }
                 get("introspect") {
                     call.respond(
@@ -87,7 +82,7 @@ fun Application.wonderwalled(config: Configuration) {
                     )
                 }
                 get("*") {
-                    call.respondRedirect("/")
+                    call.respondRedirect("/api/introspect")
                 }
             }
         }

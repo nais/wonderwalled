@@ -16,13 +16,11 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import org.slf4j.event.Level
 
-fun Application.commonSetup(withRootHandler: Boolean = true) {
+fun Application.commonSetup() {
     installFeatures()
 
     routing {
-        if (withRootHandler) {
-            contextRoot()
-        }
+        contextRoot()
         health()
     }
 }

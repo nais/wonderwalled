@@ -44,11 +44,9 @@ Start required dependencies:
 docker-compose up -d
 ```
 
-This starts up:
-
-- wonderwall at <http://localhost:4000>
-- texas at <http://localhost:3000>
-- mock-oauth2-server at <http://localhost:8080>
+- [wonderwall](https://github.com/nais/wonderwall) @ <http://localhost:4000> (reverse proxy for openid connect)
+- [texas](https://github.com/nais/texas) @ <http://localhost:3000> (token exchange / introspection service)
+- [mock-oauth2-server](https://github.com/navikt/mock-oauth2-server) @ <http://localhost:8080> (mock identity provider)
 
 Run wonderwalled for the desired identity provider:
 
