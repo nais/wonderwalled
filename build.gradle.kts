@@ -4,7 +4,7 @@ val konfigVersion = "1.6.10.0"
 val ktorVersion = "3.0.1"
 val logstashVersion = "8.0"
 val logbackVersion = "1.5.12"
-val nimbusJoseJwtVersion = "9.45"
+val nimbusJoseJwtVersion = "9.46"
 
 plugins {
     application
