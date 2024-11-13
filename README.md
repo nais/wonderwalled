@@ -38,33 +38,29 @@ Requires (almost) all requests received to contain a Bearer token issued by the 
 
 Requires JDK installed, minimum version 21.
 
-Start required dependencies:
+```shell
+make azure
+```
+
+or
 
 ```shell
-docker-compose up -d
+make idporten
 ```
+
+or
+
+```shell
+make maskinporten
+```
+
+This starts up required dependencies with docker-compose:
 
 - [wonderwall](https://github.com/nais/wonderwall) @ <http://localhost:4000> (reverse proxy for openid connect)
 - [texas](https://github.com/nais/texas) @ <http://localhost:3000> (token exchange / introspection service)
-- [mock-oauth2-server](https://github.com/navikt/mock-oauth2-server) @ <http://localhost:8080> (mock identity provider)
+- [mock-oauth2-server](https://github.com/navikt/mock-oauth2-server) @ <http://localhost:7070> (mock identity provider)
 
-Run wonderwalled for the desired identity provider:
-
-```shell
-./gradlew wonderwalled-azure:run
-```
-
-or
-
-```shell
-./gradlew wonderwalled-idporten:run
-```
-
-or
-
-```shell
-./gradlew wonderwalled-maskinporten:run
-```
+and then runs Wonderwalled for the chosen identity provider.
 
 Visit the endpoints at `localhost:4000` (i.e. via Wonderwall as a reverse proxy):
 
