@@ -65,6 +65,30 @@ subprojects {
         implementation("io.ktor:ktor-server-auth-jwt:${ktorVersion}")
         implementation("io.ktor:ktor-server-content-negotiation:${ktorVersion}")
         implementation("io.ktor:ktor-serialization-jackson:${ktorVersion}")
+        constraints {
+            // require a newer patch version to fix JsonAnySetter:
+            // https://github.com/FasterXML/jackson-databind/issues/4508
+            add("implementation", "com.fasterxml.jackson.core:jackson-annotations") {
+                version {
+                    require("2.18.1")
+                }
+            }
+            add("implementation", "com.fasterxml.jackson.core:jackson-core") {
+                version {
+                    require("2.18.1")
+                }
+            }
+            add("implementation", "com.fasterxml.jackson.core:jackson-databind") {
+                version {
+                    require("2.18.1")
+                }
+            }
+            add("implementation", "com.fasterxml.jackson.module:jackson-module-kotlin") {
+                version {
+                    require("2.18.1")
+                }
+            }
+        }
         implementation("io.ktor:ktor-client-cio:${ktorVersion}")
         implementation("io.ktor:ktor-client-core:${ktorVersion}")
         implementation("io.ktor:ktor-client-content-negotiation:${ktorVersion}")
