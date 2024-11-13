@@ -15,7 +15,7 @@ jobs:
         module:
           - azure
           - idporten
-          #- maskinporten
+          - maskinporten
         include:
           - module: azure
             token-generator: true
