@@ -1,15 +1,14 @@
 package io.nais
 
-import com.auth0.jwk.JwkProviderBuilder
+import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
+import com.natpryce.konfig.EnvironmentVariables
+import com.natpryce.konfig.Key
+import com.natpryce.konfig.intType
+import com.natpryce.konfig.overriding
+import com.natpryce.konfig.stringType
 import io.ktor.server.application.Application
-import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.authentication
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.request.host
-import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.get
@@ -17,10 +16,25 @@ import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.nais.common.IdentityProvider
 import io.nais.common.TexasClient
+import io.nais.common.TexasConfiguration
+import io.nais.common.TexasValidator
 import io.nais.common.commonSetup
 import io.nais.common.requestHeaders
-import java.net.URI
-import java.util.concurrent.TimeUnit
+
+private val config =
+    systemProperties() overriding
+        EnvironmentVariables()
+
+data class Configuration(
+    val port: Int = config.getOrElse(Key("application.port", intType), 8080),
+    val texas: TexasConfiguration = TexasConfiguration(config),
+    // optional, generally only needed when running locally
+    val ingress: String =
+        config.getOrElse(
+            key = Key("wonderwall.ingress", stringType),
+            default = "",
+        ),
+)
 
 fun main() {
     val config = Configuration()
@@ -31,59 +45,33 @@ fun main() {
 }
 
 fun Application.wonderwalled(config: Configuration) {
-    val jwksURL = URI.create(config.azure.openIdConfiguration.jwksUri).toURL()
-    val jwkProvider =
-        JwkProviderBuilder(jwksURL)
-            .cached(10, 1, TimeUnit.HOURS)
-            .rateLimited(10, 1, TimeUnit.MINUTES)
-            .build()
-
     commonSetup()
 
     val texasClient = TexasClient(config.texas, IdentityProvider.MASKINPORTEN)
 
-    authentication {
-        jwt {
-            verifier(jwkProvider, config.azure.openIdConfiguration.issuer) {
-                withAudience(config.azure.clientId)
-            }
-
-            validate { credentials -> JWTPrincipal(credentials.payload) }
-
-            // challenge is called if the request authentication fails or is not provided
-            challenge { _, _ ->
-                val ingress =
-                    config.ingress.ifEmpty(defaultValue = {
-                        "${call.request.local.scheme}://${call.request.host()}"
-                    })
-
-                // redirect to login endpoint (wonderwall) and indicate that the user should be redirected back
-                // to the original request path after authentication
-                call.respondRedirect("$ingress/oauth2/login?redirect=${call.request.uri}")
-            }
-        }
-    }
-
     routing {
-        authenticate {
-            route("api") {
-                get("headers") {
-                    call.respond(call.requestHeaders())
-                }
+        route("api") {
+            install(TexasValidator) {
+                client = TexasClient(config.texas, IdentityProvider.AZURE_AD)
+                ingress = config.ingress
+            }
 
-                get("token") {
-                    call.respond(texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api"))
-                }
-                get("introspect") {
-                    call.respond(
-                        texasClient.introspect(
-                            texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
-                        ),
-                    )
-                }
-                get("*") {
-                    call.respondRedirect("/api/introspect")
-                }
+            get("headers") {
+                call.respond(call.requestHeaders())
+            }
+
+            get("token") {
+                call.respond(texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api"))
+            }
+            get("introspect") {
+                call.respond(
+                    texasClient.introspect(
+                        texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
+                    ),
+                )
+            }
+            get("*") {
+                call.respondRedirect("/api/introspect")
             }
         }
     }
