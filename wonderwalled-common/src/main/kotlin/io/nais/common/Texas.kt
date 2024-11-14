@@ -103,7 +103,7 @@ class TexasClient(
         withSpan("TexasClient/introspect") {
             httpClient.post(config.introspectionEndpoint) {
                 contentType(ContentType.Application.Json)
-                setBody(TexasIntrospectionRequest(accessToken, provider.alias))
+                setBody(TexasIntrospectionRequest(accessToken))
             }.body()
         }
 
