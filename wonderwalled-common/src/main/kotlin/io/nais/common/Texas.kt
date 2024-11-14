@@ -19,6 +19,9 @@ import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.request.host
 import io.ktor.server.request.uri
 import io.ktor.server.response.respondRedirect
+import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.Tracer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -53,6 +56,7 @@ data class TexasTokenResponse(
 )
 
 data class TexasTokenExchangeRequest(
+    val target: String,
     @JsonProperty("user_token")
     val userToken: String,
     @JsonProperty("identity_provider")
@@ -74,28 +78,62 @@ data class TexasIntropectionResponse(
 class TexasClient(
     private val config: TexasConfiguration,
     private val provider: IdentityProvider,
-    private val httpClient: HttpClient = defaultHttpClient(),
+    private val openTelemetry: OpenTelemetry? = null,
+    private val httpClient: HttpClient = defaultHttpClient(openTelemetry),
 ) {
-    suspend fun token(target: String) =
-        httpClient
-            .post(config.tokenEndpoint) {
+    private val tracer: Tracer? = openTelemetry?.getTracer("io.nais.common.TexasClient")
+
+    suspend fun token(target: String): TexasTokenResponse =
+        withSpan("TexasClient/token", target) {
+            httpClient.post(config.tokenEndpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(TexasTokenRequest(target, provider.alias))
-            }.body<TexasTokenResponse>()
+            }.body()
+        }
 
-    suspend fun exchange(userToken: String) =
-        httpClient
-            .post(config.tokenExchangeEndpoint) {
+    suspend fun exchange(target: String, userToken: String): TexasTokenResponse =
+        withSpan("TexasClient/exchange", target) {
+            httpClient.post(config.tokenExchangeEndpoint) {
                 contentType(ContentType.Application.Json)
-                setBody(TexasTokenExchangeRequest(userToken, provider.alias))
-            }.body<TexasTokenResponse>()
+                setBody(TexasTokenExchangeRequest(target, userToken, provider.alias))
+            }.body()
+        }
 
-    suspend fun introspect(accessToken: String) =
-        httpClient
-            .post(config.introspectionEndpoint) {
+    suspend fun introspect(accessToken: String): TexasIntropectionResponse =
+        withSpan("TexasClient/introspect") {
+            httpClient.post(config.introspectionEndpoint) {
                 contentType(ContentType.Application.Json)
-                setBody(TexasIntrospectionRequest(accessToken))
-            }.body<TexasIntropectionResponse>()
+                setBody(TexasIntrospectionRequest(accessToken, provider.alias))
+            }.body()
+        }
+
+    private suspend fun <T> withSpan(
+        spanName: String,
+        target: String? = null,
+        block: suspend () -> T
+    ): T {
+        val span = tracer?.spanBuilder(spanName)?.startSpan()?.apply {
+            this.setAttribute(attributeKeyIdentityProvider, provider.alias)
+            target?.let { this.setAttribute(attributeKeyTarget, it) }
+        }
+
+        if (tracer == null || span == null) {
+            return block()
+        }
+
+        return try {
+            span.makeCurrent().use { _ ->
+                block()
+            }
+        } finally {
+            span.end()
+        }
+    }
+
+    companion object {
+        private val attributeKeyTarget: AttributeKey<String> = AttributeKey.stringKey("target")
+        private val attributeKeyIdentityProvider: AttributeKey<String> = AttributeKey.stringKey("identity_provider")
+    }
 }
 
 class TexasPluginConfiguration(

@@ -7,6 +7,7 @@ import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import io.ktor.server.application.Application
+import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respond
@@ -18,8 +19,10 @@ import io.nais.common.IdentityProvider
 import io.nais.common.TexasClient
 import io.nais.common.TexasConfiguration
 import io.nais.common.TexasValidator
+import io.nais.common.buildOpenTelemetryConfig
 import io.nais.common.commonSetup
 import io.nais.common.requestHeaders
+import io.opentelemetry.instrumentation.ktor.v3_0.server.KtorServerTracing
 
 private val config =
     systemProperties() overriding
@@ -47,12 +50,18 @@ fun main() {
 fun Application.wonderwalled(config: Configuration) {
     commonSetup()
 
-    val texasClient = TexasClient(config.texas, IdentityProvider.MASKINPORTEN)
+    val otel = buildOpenTelemetryConfig("wonderwalled-maskinporten")
+
+    install(KtorServerTracing) {
+        setOpenTelemetry(otel)
+    }
+
+    val texasClient = TexasClient(config.texas, IdentityProvider.MASKINPORTEN, otel)
 
     routing {
         route("api") {
             install(TexasValidator) {
-                client = TexasClient(config.texas, IdentityProvider.AZURE_AD)
+                client = TexasClient(config.texas, IdentityProvider.AZURE_AD, otel)
                 ingress = config.ingress
             }
 

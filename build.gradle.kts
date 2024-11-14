@@ -5,6 +5,8 @@ val ktorVersion = "3.0.1"
 val logstashVersion = "8.0"
 val logbackVersion = "1.5.12"
 val nimbusJoseJwtVersion = "9.46"
+val opentelemetryVersion = "1.44.1"
+val opentelemetryKtorVersion = "2.10.0-alpha"
 
 plugins {
     application
@@ -94,6 +96,10 @@ subprojects {
         implementation("io.ktor:ktor-client-content-negotiation:${ktorVersion}")
         implementation("com.natpryce:konfig:${konfigVersion}")
         implementation("com.nimbusds:nimbus-jose-jwt:${nimbusJoseJwtVersion}")
+        implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-3.0:${opentelemetryKtorVersion}")
+        implementation("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
+        implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:$opentelemetryVersion");
+        implementation("io.opentelemetry:opentelemetry-exporter-otlp:${opentelemetryVersion}")
         implementation("net.logstash.logback:logstash-logback-encoder:${logstashVersion}")
         runtimeOnly("ch.qos.logback:logback-classic:${logbackVersion}")
     }
