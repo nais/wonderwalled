@@ -72,6 +72,7 @@ fun main() {
                         ),
                     )
                 }
+
                 get("*") {
                     call.respondRedirect("/api/introspect")
                 }
