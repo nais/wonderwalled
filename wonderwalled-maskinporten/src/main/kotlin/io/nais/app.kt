@@ -6,7 +6,6 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
@@ -18,7 +17,9 @@ import io.ktor.server.routing.routing
 import io.nais.common.AuthClient
 import io.nais.common.AuthClientConfiguration
 import io.nais.common.IdentityProvider
+import io.nais.common.IntrospectionResponse
 import io.nais.common.NaisAuth
+import io.nais.common.TokenResponse
 import io.nais.common.commonSetup
 import io.nais.common.openTelemetry
 import io.nais.common.requestHeaders
@@ -40,45 +41,41 @@ fun main() {
     val config = Configuration()
 
     embeddedServer(CIO, port = config.port) {
-        wonderwalled(config)
-    }.start(wait = true)
-}
+        commonSetup()
 
-fun Application.wonderwalled(config: Configuration) {
-    commonSetup()
+        val otel = openTelemetry(config.name)
+        val auth = AuthClient(config.auth, IdentityProvider.MASKINPORTEN, otel)
 
-    val otel = openTelemetry(config.name)
-    val auth = AuthClient(config.auth, IdentityProvider.MASKINPORTEN, otel)
+        install(KtorServerTracing) {
+            setOpenTelemetry(otel)
+        }
 
-    install(KtorServerTracing) {
-        setOpenTelemetry(otel)
-    }
+        routing {
+            route("api") {
+                install(NaisAuth) {
+                    client = AuthClient(config.auth, IdentityProvider.AZURE_AD, otel)
+                    ingress = config.ingress
+                }
 
-    routing {
-        route("api") {
-            install(NaisAuth) {
-                client = AuthClient(config.auth, IdentityProvider.AZURE_AD, otel)
-                ingress = config.ingress
-            }
+                get("headers") {
+                    call.respond<Map<String, String>>(call.requestHeaders())
+                }
 
-            get("headers") {
-                call.respond(call.requestHeaders())
-            }
+                get("token") {
+                    call.respond<TokenResponse>(auth.token(call.request.queryParameters["target"] ?: "nav:test/api"))
+                }
 
-            get("token") {
-                call.respond(auth.token(call.request.queryParameters["target"] ?: "nav:test/api"))
-            }
-
-            get("introspect") {
-                call.respond(
-                    auth.introspect(
-                        auth.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
-                    ),
-                )
-            }
-            get("*") {
-                call.respondRedirect("/api/introspect")
+                get("introspect") {
+                    call.respond<IntrospectionResponse>(
+                        auth.introspect(
+                            auth.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
+                        ),
+                    )
+                }
+                get("*") {
+                    call.respondRedirect("/api/introspect")
+                }
             }
         }
-    }
+    }.start(wait = true)
 }
