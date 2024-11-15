@@ -1,10 +1,16 @@
 package io.nais.common
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.http.HttpHeaders
+import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
+import io.ktor.server.auth.authentication
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.parseAuthorizationHeader
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
@@ -69,3 +75,19 @@ fun Routing.contextRoot() {
         call.respondRedirect("/api/me")
     }
 }
+
+fun ApplicationCall.getTokenInfo(): Map<String, JsonNode>? =
+    authentication.principal<JWTPrincipal>()?.let { principal ->
+        principal.payload.claims.entries.associate { claim ->
+            claim.key to claim.value.`as`(JsonNode::class.java)
+        }
+    }
+
+fun ApplicationCall.requestHeaders(): Map<String, String> =
+    request.headers.entries().associate { header -> header.key to header.value.joinToString() }
+
+fun ApplicationCall.bearerToken(): String? =
+    request
+        .parseAuthorizationHeader()
+        ?.let { it as HttpAuthHeader.Single }
+        ?.blob

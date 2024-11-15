@@ -15,12 +15,12 @@ import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import io.nais.common.AuthClient
+import io.nais.common.AuthClientConfiguration
 import io.nais.common.IdentityProvider
-import io.nais.common.TexasClient
-import io.nais.common.TexasConfiguration
-import io.nais.common.TexasValidator
-import io.nais.common.buildOpenTelemetryConfig
+import io.nais.common.NaisAuth
 import io.nais.common.commonSetup
+import io.nais.common.openTelemetry
 import io.nais.common.requestHeaders
 import io.opentelemetry.instrumentation.ktor.v3_0.server.KtorServerTracing
 
@@ -29,14 +29,11 @@ private val config =
         EnvironmentVariables()
 
 data class Configuration(
+    val name: String = "wonderwalled-maskinporten",
     val port: Int = config.getOrElse(Key("application.port", intType), 8080),
-    val texas: TexasConfiguration = TexasConfiguration(config),
+    val auth: AuthClientConfiguration = AuthClientConfiguration(config),
     // optional, generally only needed when running locally
-    val ingress: String =
-        config.getOrElse(
-            key = Key("wonderwall.ingress", stringType),
-            default = "",
-        ),
+    val ingress: String = config.getOrElse(key = Key("login.ingress", stringType), default = ""),
 )
 
 fun main() {
@@ -50,18 +47,17 @@ fun main() {
 fun Application.wonderwalled(config: Configuration) {
     commonSetup()
 
-    val otel = buildOpenTelemetryConfig("wonderwalled-maskinporten")
+    val otel = openTelemetry(config.name)
+    val auth = AuthClient(config.auth, IdentityProvider.MASKINPORTEN, otel)
 
     install(KtorServerTracing) {
         setOpenTelemetry(otel)
     }
 
-    val texasClient = TexasClient(config.texas, IdentityProvider.MASKINPORTEN, otel)
-
     routing {
         route("api") {
-            install(TexasValidator) {
-                client = TexasClient(config.texas, IdentityProvider.AZURE_AD, otel)
+            install(NaisAuth) {
+                client = AuthClient(config.auth, IdentityProvider.AZURE_AD, otel)
                 ingress = config.ingress
             }
 
@@ -70,12 +66,13 @@ fun Application.wonderwalled(config: Configuration) {
             }
 
             get("token") {
-                call.respond(texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api"))
+                call.respond(auth.token(call.request.queryParameters["target"] ?: "nav:test/api"))
             }
+
             get("introspect") {
                 call.respond(
-                    texasClient.introspect(
-                        texasClient.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
+                    auth.introspect(
+                        auth.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
                     ),
                 )
             }
