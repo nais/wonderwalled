@@ -26,14 +26,6 @@ fun defaultHttpClient(
     openTelemetry?.let {
         install(KtorClientTracing) {
             setOpenTelemetry(it)
-            attributeExtractor {
-                onStart {
-                    attributes.put("start-time", System.currentTimeMillis())
-                }
-                onEnd {
-                    attributes.put("end-time", System.currentTimeMillis())
-                }
-            }
         }
     }
 }

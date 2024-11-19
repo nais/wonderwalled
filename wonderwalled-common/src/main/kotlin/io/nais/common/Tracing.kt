@@ -1,10 +1,15 @@
 package io.nais.common
 
 import io.opentelemetry.api.OpenTelemetry
-import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanBuilder
+import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.extension.kotlin.asContextElement
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import io.opentelemetry.semconv.ServiceAttributes
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.coroutineContext
 
 fun openTelemetry(serviceName: String): OpenTelemetry {
     return AutoConfiguredOpenTelemetrySdk.builder().addResourceCustomizer { oldResource, _ ->
@@ -15,24 +20,25 @@ fun openTelemetry(serviceName: String): OpenTelemetry {
     }.build().openTelemetrySdk
 }
 
-suspend fun <T> Tracer?.withSpan(
+suspend fun <T> Tracer.withSpan(
     spanName: String,
-    attributes: Map<AttributeKey<String>, String> = emptyMap(),
-    block: suspend () -> T
+    parameters: (SpanBuilder.() -> Unit)? = null,
+    block: suspend (span: Span) -> T
 ): T {
-    val span = this?.spanBuilder(spanName)?.startSpan()?.apply {
-        attributes.forEach { (key, value) -> this.setAttribute(key, value) }
+    val span: Span = this.spanBuilder(spanName).run {
+        if (parameters != null) parameters()
+        startSpan()
     }
 
-    if (this == null || span == null) {
-        return block()
-    }
-
-    return try {
-        span.makeCurrent().use { _ ->
-            block()
+    return withContext(coroutineContext + span.asContextElement()) {
+        try {
+            block(span)
+        } catch (throwable: Throwable) {
+            span.setStatus(StatusCode.ERROR)
+            span.recordException(throwable)
+            throw throwable
+        } finally {
+            span.end()
         }
-    } finally {
-        span.end()
     }
 }

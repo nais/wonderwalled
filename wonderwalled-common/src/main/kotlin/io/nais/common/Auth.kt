@@ -22,6 +22,7 @@ import io.ktor.server.request.uri
 import io.ktor.server.response.respondRedirect
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Tracer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -81,13 +82,15 @@ data class TokenIntrospectionResponse(
 class AuthClient(
     private val config: AuthClientConfig,
     private val provider: IdentityProvider,
-    private val openTelemetry: OpenTelemetry? = null,
+    private val openTelemetry: OpenTelemetry = OpenTelemetry.noop(),
     private val httpClient: HttpClient = defaultHttpClient(openTelemetry),
 ) {
-    private val tracer: Tracer? = openTelemetry?.getTracer("io.nais.common.AuthClient")
+    private val tracer: Tracer = openTelemetry.getTracer("io.nais.common.AuthClient")
 
     suspend fun token(target: String) =
-        tracer.withSpan("auth/token", traceAttributes(target)) {
+        tracer.withSpan("auth/token", parameters = {
+            setAllAttributes(traceAttributes(target))
+        }) {
             httpClient.post(config.tokenEndpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(TokenRequest(target, provider))
@@ -95,7 +98,9 @@ class AuthClient(
         }
 
     suspend fun exchange(target: String, userToken: String) =
-        tracer.withSpan("auth/exchange", traceAttributes(target)) {
+        tracer.withSpan("auth/exchange", parameters = {
+            setAllAttributes(traceAttributes(target))
+        }) {
             httpClient.post(config.tokenExchangeEndpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(TokenExchangeRequest(target, provider, userToken))
@@ -103,21 +108,21 @@ class AuthClient(
         }
 
     suspend fun introspect(accessToken: String) =
-        tracer.withSpan("auth/introspect", traceAttributes()) {
+        tracer.withSpan("auth/introspect", parameters = {
+            setAllAttributes(traceAttributes())
+        }) {
             httpClient.post(config.tokenIntrospectionEndpoint) {
                 contentType(ContentType.Application.Json)
                 setBody(TokenIntrospectionRequest(accessToken, provider))
             }.body<TokenIntrospectionResponse>()
         }
 
-    private fun traceAttributes(target: String? = null) =
-        mutableMapOf(
-            attributeKeyIdentityProvider to provider.alias,
-        ).apply {
-            if (target != null) {
-                this[attributeKeyTarget] = target
-            }
+    private fun traceAttributes(target: String? = null) = Attributes.builder().apply {
+        put(attributeKeyIdentityProvider, provider.alias)
+        if (target != null) {
+            put(attributeKeyTarget, target)
         }
+    }.build()
 
     companion object {
         private val attributeKeyTarget: AttributeKey<String> = AttributeKey.stringKey("target")
@@ -219,7 +224,8 @@ data class OpenIdConfiguration(
 private fun invalidOpenIdConfigurationException(
     expected: List<String>,
     got: String,
-): RuntimeException = RuntimeException("authority does not match the issuer returned by provider: got $got, expected one of $expected")
+): RuntimeException =
+    RuntimeException("authority does not match the issuer returned by provider: got $got, expected one of $expected")
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class AccessToken(
