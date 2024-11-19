@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory
 enum class IdentityProvider(@JsonValue val alias: String) {
     MASKINPORTEN("maskinporten"),
     AZURE_AD("azuread"),
+    IDPORTEN("idporten"),
+    TOKEN_X("tokenx"),
 }
 
 data class AuthClientConfig(

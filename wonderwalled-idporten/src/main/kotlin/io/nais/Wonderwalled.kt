@@ -1,87 +1,49 @@
 package io.nais
 
-import com.auth0.jwk.JwkProviderBuilder
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.readBytes
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.server.application.Application
-import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.authentication
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.request.host
-import io.ktor.server.request.uri
 import io.ktor.server.response.respond
-import io.ktor.server.response.respondBytes
-import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import io.nais.common.AppConfig
+import io.nais.common.AuthClient
+import io.nais.common.IdentityProvider
+import io.nais.common.NaisAuth
 import io.nais.common.bearerToken
 import io.nais.common.commonSetup
-import io.nais.common.getTokenInfo
 import io.nais.common.requestHeaders
-import java.net.URI
-import java.util.concurrent.TimeUnit
 
 fun main() {
-    val config = Configuration()
+    val config = AppConfig()
 
     embeddedServer(CIO, port = config.port) {
-        wonderwalled(config)
-    }.start(wait = true)
-}
+        commonSetup()
 
-fun Application.wonderwalled(config: Configuration) {
-    val jwksURL = URI.create(config.idporten.openIdConfiguration.jwksUri).toURL()
-    val jwkProvider =
-        JwkProviderBuilder(jwksURL)
-            .cached(10, 1, TimeUnit.HOURS)
-            .rateLimited(10, 1, TimeUnit.MINUTES)
-            .build()
+        val tokenx = AuthClient(config.auth, IdentityProvider.TOKEN_X)
+        val idporten = AuthClient(config.auth, IdentityProvider.IDPORTEN)
 
-    commonSetup()
-
-    val tokenXClient = TokenXClient(config.tokenx)
-
-    authentication {
-        jwt {
-            verifier(jwkProvider, config.idporten.openIdConfiguration.issuer) {
-                withAudience(config.idporten.audience)
-            }
-
-            validate { credentials -> JWTPrincipal(credentials.payload) }
-
-            // challenge is called if the request authentication fails or is not provided
-            challenge { _, _ ->
-                val ingress =
-                    config.ingress.ifEmpty(defaultValue = {
-                        "${call.request.local.scheme}://${call.request.host()}"
-                    })
-
-                // redirect to login endpoint (wonderwall) and indicate that the user should be redirected back
-                // to the original request path after authentication
-                call.respondRedirect("$ingress/oauth2/login?redirect=${call.request.uri}")
-            }
-        }
-    }
-
-    routing {
-        authenticate {
+        routing {
             route("api") {
+                install(NaisAuth) {
+                    client = idporten
+                    ingress = config.ingress
+                }
+
                 get("headers") {
                     call.respond(call.requestHeaders())
                 }
 
                 get("me") {
-                    when (val tokenInfo = call.getTokenInfo()) {
-                        null -> call.respond(HttpStatusCode.Unauthorized, "Could not find a valid principal")
-                        else -> call.respond(tokenInfo)
+                    val token = call.bearerToken()
+                    if (token == null) {
+                        call.respond(HttpStatusCode.Unauthorized, "missing bearer token in Authorization header")
+                        return@get
                     }
+                    call.respond(idporten.introspect(token))
                 }
+
                 get("obo") {
                     val token = call.bearerToken()
                     if (token == null) {
@@ -95,14 +57,9 @@ fun Application.wonderwalled(config: Configuration) {
                         return@get
                     }
 
-                    try {
-                        val oboToken = tokenXClient.getOnBehalfOfAccessToken(audience, token)
-                        call.respond(oboToken)
-                    } catch (e: ClientRequestException) {
-                        call.respondBytes(e.response.readBytes(), e.response.contentType(), e.response.status)
-                    }
+                    call.respond(tokenx.exchange(audience, token))
                 }
             }
         }
-    }
+    }.start(wait = true)
 }

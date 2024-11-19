@@ -7,8 +7,8 @@
     </appender>
 
     <logger name="io.nais" level="DEBUG"/>
-    <logger name="ktor.application" level="DEBUG"/>
-    <logger name="io.ktor" level="TRACE"/>
+    <logger name="ktor.application" level="INFO"/>
+    <logger name="io.ktor" level="INFO"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
