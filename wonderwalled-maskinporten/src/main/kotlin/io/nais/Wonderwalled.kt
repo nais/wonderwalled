@@ -15,10 +15,10 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.nais.common.AuthClient
-import io.nais.common.AuthClientConfiguration
+import io.nais.common.AuthClientConfig
 import io.nais.common.IdentityProvider
-import io.nais.common.IntrospectionResponse
 import io.nais.common.NaisAuth
+import io.nais.common.TokenIntrospectionResponse
 import io.nais.common.TokenResponse
 import io.nais.common.commonSetup
 import io.nais.common.openTelemetry
@@ -32,7 +32,7 @@ private val config =
 data class Configuration(
     val name: String = "wonderwalled-maskinporten",
     val port: Int = config.getOrElse(Key("application.port", intType), 8080),
-    val auth: AuthClientConfiguration = AuthClientConfiguration(config),
+    val auth: AuthClientConfig = AuthClientConfig(config),
     // optional, generally only needed when running locally
     val ingress: String = config.getOrElse(key = Key("login.ingress", stringType), default = ""),
 )
@@ -66,7 +66,7 @@ fun main() {
                 }
 
                 get("introspect") {
-                    call.respond<IntrospectionResponse>(
+                    call.respond<TokenIntrospectionResponse>(
                         auth.introspect(
                             auth.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
                         ),

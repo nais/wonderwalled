@@ -31,15 +31,15 @@ enum class IdentityProvider(@JsonValue val alias: String) {
     AZURE_AD("azuread"),
 }
 
-data class AuthClientConfiguration(
+data class AuthClientConfig(
     val tokenEndpoint: String,
     val tokenExchangeEndpoint: String,
-    val introspectionEndpoint: String,
+    val tokenIntrospectionEndpoint: String,
 ) {
     constructor(config: Configuration) : this(
-        tokenEndpoint = config[Key("auth.token.endpoint", stringType)],
-        tokenExchangeEndpoint = config[Key("auth.token.exchange.endpoint", stringType)],
-        introspectionEndpoint = config[Key("auth.introspection.endpoint", stringType)],
+        tokenEndpoint = config[Key("nais.token.endpoint", stringType)],
+        tokenExchangeEndpoint = config[Key("nais.token.exchange.endpoint", stringType)],
+        tokenIntrospectionEndpoint = config[Key("nais.token.introspection.endpoint", stringType)],
     )
 }
 
@@ -64,13 +64,13 @@ data class TokenExchangeRequest(
     val userToken: String,
 )
 
-data class IntrospectionRequest(
+data class TokenIntrospectionRequest(
     val token: String,
     @JsonProperty("identity_provider")
     val identityProvider: IdentityProvider,
 )
 
-data class IntrospectionResponse(
+data class TokenIntrospectionResponse(
     val active: Boolean,
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val error: String?,
@@ -79,7 +79,7 @@ data class IntrospectionResponse(
 )
 
 class AuthClient(
-    private val config: AuthClientConfiguration,
+    private val config: AuthClientConfig,
     private val provider: IdentityProvider,
     private val openTelemetry: OpenTelemetry? = null,
     private val httpClient: HttpClient = defaultHttpClient(openTelemetry),
@@ -104,10 +104,10 @@ class AuthClient(
 
     suspend fun introspect(accessToken: String) =
         tracer.withSpan("auth/introspect", traceAttributes()) {
-            httpClient.post(config.introspectionEndpoint) {
+            httpClient.post(config.tokenIntrospectionEndpoint) {
                 contentType(ContentType.Application.Json)
-                setBody(IntrospectionRequest(accessToken, provider))
-            }.body<IntrospectionResponse>()
+                setBody(TokenIntrospectionRequest(accessToken, provider))
+            }.body<TokenIntrospectionResponse>()
         }
 
     private fun traceAttributes(target: String? = null) =
