@@ -20,7 +20,7 @@ import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.request.host
 import io.ktor.server.request.uri
 import io.ktor.server.response.respondRedirect
-import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Tracer
@@ -82,10 +82,9 @@ data class TokenIntrospectionResponse(
 class AuthClient(
     private val config: AuthClientConfig,
     private val provider: IdentityProvider,
-    private val openTelemetry: OpenTelemetry = OpenTelemetry.noop(),
-    private val httpClient: HttpClient = defaultHttpClient(openTelemetry),
+    private val httpClient: HttpClient = defaultHttpClient(),
 ) {
-    private val tracer: Tracer = openTelemetry.getTracer("io.nais.common.AuthClient")
+    private val tracer: Tracer = GlobalOpenTelemetry.get().getTracer("io.nais.common.AuthClient")
 
     suspend fun token(target: String) =
         tracer.withSpan("auth/token", parameters = {

@@ -12,7 +12,6 @@ private val config =
         EnvironmentVariables()
 
 data class AppConfig(
-    val name: String,
     val port: Int = config.getOrElse(Key("application.port", intType), 8080),
     val auth: AuthClientConfig = AuthClientConfig(config),
     // optional, generally only needed when running locally

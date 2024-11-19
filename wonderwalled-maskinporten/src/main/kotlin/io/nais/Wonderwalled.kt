@@ -1,6 +1,5 @@
 package io.nais
 
-import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respond
@@ -12,43 +11,34 @@ import io.nais.common.AppConfig
 import io.nais.common.AuthClient
 import io.nais.common.IdentityProvider
 import io.nais.common.NaisAuth
-import io.nais.common.TokenIntrospectionResponse
-import io.nais.common.TokenResponse
 import io.nais.common.commonSetup
-import io.nais.common.openTelemetry
 import io.nais.common.requestHeaders
-import io.opentelemetry.instrumentation.ktor.v3_0.server.KtorServerTracing
 
 fun main() {
-    val config = AppConfig(name = "wonderwalled-maskinporten")
+    val config = AppConfig()
 
     embeddedServer(CIO, port = config.port) {
         commonSetup()
 
-        val otel = openTelemetry(config.name)
-        val auth = AuthClient(config.auth, IdentityProvider.MASKINPORTEN, otel)
-
-        install(KtorServerTracing) {
-            setOpenTelemetry(otel)
-        }
+        val auth = AuthClient(config.auth, IdentityProvider.MASKINPORTEN)
 
         routing {
             route("api") {
                 install(NaisAuth) {
-                    client = AuthClient(config.auth, IdentityProvider.AZURE_AD, otel)
+                    client = AuthClient(config.auth, IdentityProvider.AZURE_AD)
                     ingress = config.ingress
                 }
 
                 get("headers") {
-                    call.respond<Map<String, String>>(call.requestHeaders())
+                    call.respond(call.requestHeaders())
                 }
 
                 get("token") {
-                    call.respond<TokenResponse>(auth.token(call.request.queryParameters["target"] ?: "nav:test/api"))
+                    call.respond(auth.token(call.request.queryParameters["target"] ?: "nav:test/api"))
                 }
 
                 get("introspect") {
-                    call.respond<TokenIntrospectionResponse>(
+                    call.respond(
                         auth.introspect(
                             auth.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
                         ),

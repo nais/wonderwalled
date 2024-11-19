@@ -57,6 +57,7 @@ subprojects {
                     val (key, value) = it.split("=")
                     key to value.trimQuotes()
                 } ?: emptyMap()
+            environment("OTEL_SERVICE_NAME", project.name)
         }
     }
 

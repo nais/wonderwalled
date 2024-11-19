@@ -7,13 +7,11 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.serialization.jackson.jackson
-import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.instrumentation.ktor.v3_0.client.KtorClientTracing
 import kotlinx.coroutines.runBlocking
 
-fun defaultHttpClient(
-    openTelemetry: OpenTelemetry? = null,
-) = HttpClient(CIO) {
+fun defaultHttpClient() = HttpClient(CIO) {
     expectSuccess = true
     install(ContentNegotiation) {
         jackson {
@@ -23,10 +21,8 @@ fun defaultHttpClient(
         }
     }
 
-    openTelemetry?.let {
-        install(KtorClientTracing) {
-            setOpenTelemetry(it)
-        }
+    install(KtorClientTracing) {
+        setOpenTelemetry(GlobalOpenTelemetry.get())
     }
 }
 

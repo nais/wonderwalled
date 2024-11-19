@@ -23,10 +23,15 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import io.opentelemetry.api.GlobalOpenTelemetry
+import io.opentelemetry.instrumentation.ktor.v3_0.server.KtorServerTracing
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import org.slf4j.event.Level
 import java.util.UUID
 
 fun Application.commonSetup() {
+    AutoConfiguredOpenTelemetrySdk.initialize()
+
     installFeatures()
 
     routing {
@@ -56,6 +61,10 @@ fun Application.installFeatures() {
         disableDefaultColors()
         filter { call -> !call.request.path().startsWith("/internal") }
         callIdMdc("call_id")
+    }
+
+    install(KtorServerTracing) {
+        setOpenTelemetry(GlobalOpenTelemetry.get())
     }
 }
 
