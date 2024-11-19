@@ -20,29 +20,32 @@ fun main() {
     embeddedServer(CIO, port = config.port) {
         commonSetup()
 
-        val auth = AuthClient(config.auth, IdentityProvider.MASKINPORTEN)
+        val maskinporten = AuthClient(config.auth, IdentityProvider.MASKINPORTEN)
+        val azure = AuthClient(config.auth, IdentityProvider.AZURE_AD)
 
         routing {
             route("api") {
                 install(NaisAuth) {
-                    client = AuthClient(config.auth, IdentityProvider.AZURE_AD)
+                    client = azure
                     ingress = config.ingress
                 }
 
                 get("headers") {
-                    call.respond(call.requestHeaders())
+                    val headers = call.requestHeaders()
+                    call.respond(headers)
                 }
 
                 get("token") {
-                    call.respond(auth.token(call.request.queryParameters["target"] ?: "nav:test/api"))
+                    val target = call.request.queryParameters["scope"] ?: "nav:test/api"
+                    val token = maskinporten.token(target)
+                    call.respond(token)
                 }
 
                 get("introspect") {
-                    call.respond(
-                        auth.introspect(
-                            auth.token(call.request.queryParameters["target"] ?: "nav:test/api").accessToken,
-                        ),
-                    )
+                    val target = call.request.queryParameters["scope"] ?: "nav:test/api"
+                    val token = maskinporten.token(target)
+                    val introspection = maskinporten.introspect(token.accessToken)
+                    call.respond(introspection)
                 }
 
                 get("*") {

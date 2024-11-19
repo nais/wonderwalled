@@ -41,7 +41,9 @@ fun main() {
                         call.respond(HttpStatusCode.Unauthorized, "missing bearer token in Authorization header")
                         return@get
                     }
-                    call.respond(idporten.introspect(token))
+
+                    val introspection = idporten.introspect(token)
+                    call.respond(introspection)
                 }
 
                 get("obo") {
@@ -57,7 +59,8 @@ fun main() {
                         return@get
                     }
 
-                    call.respond(tokenx.exchange(audience, token))
+                    val exchange = tokenx.exchange(audience, token)
+                    call.respond(exchange)
                 }
             }
         }

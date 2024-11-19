@@ -21,12 +21,12 @@ fun main() {
     embeddedServer(CIO, port = config.port) {
         commonSetup()
 
-        val auth = AuthClient(config.auth, IdentityProvider.AZURE_AD)
+        val azure = AuthClient(config.auth, IdentityProvider.AZURE_AD)
 
         routing {
             route("api") {
                 install(NaisAuth) {
-                    client = auth
+                    client = azure
                     ingress = config.ingress
                 }
 
@@ -40,7 +40,9 @@ fun main() {
                         call.respond(HttpStatusCode.Unauthorized, "missing bearer token in Authorization header")
                         return@get
                     }
-                    call.respond(auth.introspect(token))
+
+                    val introspection = azure.introspect(token)
+                    call.respond(introspection)
                 }
 
                 get("obo") {
@@ -56,7 +58,9 @@ fun main() {
                         return@get
                     }
 
-                    call.respond(auth.exchange(audience.toScope(), token))
+                    val target = audience.toScope()
+                    val exchange = azure.exchange(target, token)
+                    call.respond(exchange)
                 }
 
                 get("m2m") {
@@ -66,7 +70,9 @@ fun main() {
                         return@get
                     }
 
-                    call.respond(auth.token(audience.toScope()))
+                    val target = audience.toString()
+                    val token = azure.token(target)
+                    call.respond(token)
                 }
             }
         }
