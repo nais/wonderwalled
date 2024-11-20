@@ -3,8 +3,6 @@ kind: "Application"
 metadata:
   name: "wonderwalled-azure"
   namespace: "aura"
-  labels:
-    team: "aura"
   annotations:
     texas.nais.io/enabled: "true"
 spec:
