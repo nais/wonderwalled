@@ -1,9 +1,13 @@
 package io.nais
 
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.statement.readRawBytes
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
@@ -59,8 +63,12 @@ fun main() {
                         return@get
                     }
 
-                    val exchange = tokenx.exchange(audience, token)
-                    call.respond(exchange)
+                    try {
+                        val exchange = tokenx.exchange(audience, token)
+                        call.respond(exchange)
+                    } catch (e: ClientRequestException) {
+                        call.respondBytes(e.response.readRawBytes(), e.response.contentType(), e.response.status)
+                    }
                 }
             }
         }

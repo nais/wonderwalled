@@ -1,8 +1,12 @@
 package io.nais
 
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.statement.readRawBytes
+import io.ktor.http.contentType
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
@@ -37,8 +41,12 @@ fun main() {
 
                 get("token") {
                     val target = call.request.queryParameters["scope"] ?: "nav:test/api"
-                    val token = maskinporten.token(target)
-                    call.respond(token)
+                    try {
+                        val token = maskinporten.token(target)
+                        call.respond(token)
+                    } catch (e: ClientRequestException) {
+                        call.respondBytes(e.response.readRawBytes(), e.response.contentType(), e.response.status)
+                    }
                 }
 
                 get("introspect") {
