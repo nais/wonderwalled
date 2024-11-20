@@ -6,6 +6,10 @@ metadata:
   annotations:
     texas.nais.io/enabled: "true"
 spec:
+  accessPolicy:
+    inbound:
+      rules:
+        - application: wonderwalled-idporten
   image: {{image}}
   port: 8080
   liveness:
