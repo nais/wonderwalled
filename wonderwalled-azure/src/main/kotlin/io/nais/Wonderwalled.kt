@@ -78,7 +78,7 @@ fun main() {
                         return@get
                     }
 
-                    val target = audience.toString()
+                    val target = audience.toScope()
                     try {
                         val token = azure.token(target)
                         call.respond(token)
