@@ -38,3 +38,7 @@ spec:
       enabled: true
   tokenx:
     enabled: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: sdk
