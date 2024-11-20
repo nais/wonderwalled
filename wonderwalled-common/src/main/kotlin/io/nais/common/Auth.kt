@@ -10,10 +10,8 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.stringType
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import io.ktor.client.request.forms.submitForm
+import io.ktor.http.parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.createRouteScopedPlugin
 import io.ktor.server.request.host
@@ -45,31 +43,11 @@ data class AuthClientConfig(
     )
 }
 
-data class TokenRequest(
-    val target: String,
-    @JsonProperty("identity_provider")
-    val identityProvider: IdentityProvider,
-)
-
 data class TokenResponse(
     @JsonProperty("access_token")
     val accessToken: String,
     @JsonProperty("expires_in")
     val expiresInSeconds: Int,
-)
-
-data class TokenExchangeRequest(
-    val target: String,
-    @JsonProperty("identity_provider")
-    val identityProvider: IdentityProvider,
-    @JsonProperty("user_token")
-    val userToken: String,
-)
-
-data class TokenIntrospectionRequest(
-    val token: String,
-    @JsonProperty("identity_provider")
-    val identityProvider: IdentityProvider,
 )
 
 data class TokenIntrospectionResponse(
@@ -88,33 +66,34 @@ class AuthClient(
     private val tracer: Tracer = GlobalOpenTelemetry.get().getTracer("io.nais.common.AuthClient")
 
     suspend fun token(target: String) =
-        tracer.withSpan("auth/token", parameters = {
+        tracer.withSpan("AuthClient/token (${provider.alias})", parameters = {
             setAllAttributes(traceAttributes(target))
         }) {
-            httpClient.post(config.tokenEndpoint) {
-                contentType(ContentType.Application.Json)
-                setBody(TokenRequest(target, provider))
-            }.body<TokenResponse>()
+            httpClient.submitForm(config.tokenEndpoint, parameters {
+                set("target", target)
+                set("identity_provider", provider.alias)
+            }).body<TokenResponse>()
         }
 
     suspend fun exchange(target: String, userToken: String) =
-        tracer.withSpan("auth/exchange", parameters = {
+        tracer.withSpan("AuthClient/exchange (${provider.alias})", parameters = {
             setAllAttributes(traceAttributes(target))
         }) {
-            httpClient.post(config.tokenExchangeEndpoint) {
-                contentType(ContentType.Application.Json)
-                setBody(TokenExchangeRequest(target, provider, userToken))
-            }.body<TokenResponse>()
+            httpClient.submitForm(config.tokenExchangeEndpoint, parameters {
+                set("target", target)
+                set("user_token", userToken)
+                set("identity_provider", provider.alias)
+            }).body<TokenResponse>()
         }
 
     suspend fun introspect(accessToken: String) =
-        tracer.withSpan("auth/introspect", parameters = {
+        tracer.withSpan("AuthClient/introspect (${provider.alias})", parameters = {
             setAllAttributes(traceAttributes())
         }) {
-            httpClient.post(config.tokenIntrospectionEndpoint) {
-                contentType(ContentType.Application.Json)
-                setBody(TokenIntrospectionRequest(accessToken, provider))
-            }.body<TokenIntrospectionResponse>()
+            httpClient.submitForm(config.tokenIntrospectionEndpoint, parameters {
+                set("token", accessToken)
+                set("identity_provider", provider.alias)
+            }).body<TokenIntrospectionResponse>()
         }
 
     private fun traceAttributes(target: String? = null) = Attributes.builder().apply {
