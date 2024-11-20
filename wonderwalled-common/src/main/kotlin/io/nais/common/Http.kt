@@ -5,16 +5,15 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.http.HttpHeaders
-import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
-import io.ktor.server.auth.parseAuthorizationHeader
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.request.authorization
 import io.ktor.server.request.path
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
@@ -92,7 +91,6 @@ fun ApplicationCall.requestHeaders(): Map<String, String> =
         .associate { header -> header.key to header.value.joinToString() }
 
 fun ApplicationCall.bearerToken(): String? =
-    request
-        .parseAuthorizationHeader()
-        ?.let { it as HttpAuthHeader.Single }
-        ?.blob
+    request.authorization()
+        ?.takeIf { it.startsWith("Bearer ", ignoreCase = true) }
+        ?.removePrefix("Bearer ")
