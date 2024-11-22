@@ -16,11 +16,11 @@ jobs:
           - azure
           - idporten
           - maskinporten
-        #include:
-        #  - module: azure
-        #    token-generator: true
-        #  - module: idporten
-        #    token-generator: true
+        include:
+          - module: azure
+            token-generator: true
+          - module: idporten
+            token-generator: true
     steps:
       - name: Checkout latest code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # ratchet:actions/checkout@v4

@@ -5,6 +5,8 @@ metadata:
   namespace: "aura"
   labels:
     team: "aura"
+  annotations:
+    texas.nais.io/enabled: "true"
 spec:
   image: {{image}}
   port: 8080
@@ -43,3 +45,7 @@ spec:
     scopes:
       consumes:
         - name: nav:test/api
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: sdk
