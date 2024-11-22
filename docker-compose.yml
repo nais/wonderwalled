@@ -39,6 +39,9 @@ services:
       # bind to all interfaces to allow wonderwalled to reach the service
       # DO NOT DO THIS IN PRODUCTION
       BIND_ADDRESS: "0.0.0.0:3000"
+      DOWNSTREAM_APP_NAME: myapplication
+      DOWNSTREAM_APP_NAMESPACE: mynamespace
+      DOWNSTREAM_APP_CLUSTER: mycluster
     restart: on-failure
     env_file: "${ENV_FILE:-.env}"
     extra_hosts:
