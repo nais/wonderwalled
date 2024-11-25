@@ -3,16 +3,15 @@ package io.nais.common
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
+import io.ktor.server.engine.embeddedServer
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.authorization
 import io.ktor.server.request.path
 import io.ktor.server.response.respond
@@ -24,13 +23,16 @@ import io.ktor.server.routing.routing
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.instrumentation.ktor.v3_0.client.KtorClientTracing
 import io.opentelemetry.instrumentation.ktor.v3_0.server.KtorServerTracing
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import org.slf4j.event.Level
 import java.util.UUID
+import io.ktor.client.engine.cio.CIO as ClientCIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+import io.ktor.server.cio.CIO as ServerCIO
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
 
-fun defaultHttpClient() = HttpClient(CIO) {
+fun defaultHttpClient() = HttpClient(ClientCIO) {
     expectSuccess = true
-    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+    install(ClientContentNegotiation) {
         jackson {
             deserializationConfig.apply {
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -43,27 +45,32 @@ fun defaultHttpClient() = HttpClient(CIO) {
     }
 }
 
-fun Application.commonSetup() {
-    AutoConfiguredOpenTelemetrySdk.initialize()
-
-    install(ContentNegotiation) {
+fun server(
+    config: Config = Config(),
+    module: Application.(Config) -> Unit
+) = embeddedServer(ServerCIO, port = config.port) {
+    install(ServerContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
         }
     }
+
     install(IgnoreTrailingSlash)
+
     install(CallId) {
         header(HttpHeaders.XCorrelationId)
         header(HttpHeaders.XRequestId)
         generate { UUID.randomUUID().toString() }
         verify { callId: String -> callId.isNotEmpty() }
     }
+
     install(CallLogging) {
         level = Level.INFO
         disableDefaultColors()
         filter { call -> !call.request.path().startsWith("/internal") }
         callIdMdc("call_id")
     }
+
     install(KtorServerTracing) {
         setOpenTelemetry(GlobalOpenTelemetry.get())
     }
@@ -82,6 +89,8 @@ fun Application.commonSetup() {
             }
         }
     }
+
+    module(config)
 }
 
 fun ApplicationCall.requestHeaders(): Map<String, String> =

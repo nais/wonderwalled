@@ -1,7 +1,7 @@
 package io.nais.common
 
+import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.extension.kotlin.asContextElement
@@ -10,11 +10,13 @@ import kotlin.coroutines.coroutineContext
 
 suspend fun <T> Tracer.withSpan(
     spanName: String,
-    parameters: (SpanBuilder.() -> Unit)? = null,
+    attributes: Attributes? = null,
     block: suspend (span: Span) -> T
 ): T {
     val span: Span = this.spanBuilder(spanName).run {
-        if (parameters != null) parameters()
+        if (attributes != null) {
+            setAllAttributes(attributes)
+        }
         startSpan()
     }
 

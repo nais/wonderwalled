@@ -1,29 +1,19 @@
 package io.nais
 
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.readRawBytes
-import io.ktor.http.contentType
-import io.ktor.server.cio.CIO
-import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respond
-import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import io.nais.common.AppConfig
 import io.nais.common.AuthClient
 import io.nais.common.IdentityProvider
 import io.nais.common.NaisAuth
-import io.nais.common.commonSetup
+import io.nais.common.TokenResponse
 import io.nais.common.requestHeaders
+import io.nais.common.server
 
 fun main() {
-    val config = AppConfig()
-
-    embeddedServer(CIO, port = config.port) {
-        commonSetup()
-
+    server { config ->
         val maskinporten = AuthClient(config.auth, IdentityProvider.MASKINPORTEN)
         val azure = AuthClient(config.auth, IdentityProvider.AZURE_AD)
 
@@ -41,19 +31,23 @@ fun main() {
 
                 get("token") {
                     val target = call.request.queryParameters["scope"] ?: "nav:test/api"
-                    try {
-                        val token = maskinporten.token(target)
-                        call.respond(token)
-                    } catch (e: ClientRequestException) {
-                        call.respondBytes(e.response.readRawBytes(), e.response.contentType(), e.response.status)
+                    when (val response = maskinporten.token(target)) {
+                        is TokenResponse.Success -> call.respond(response)
+                        is TokenResponse.Error -> call.respond(response.status, response.error)
                     }
                 }
 
                 get("introspect") {
                     val target = call.request.queryParameters["scope"] ?: "nav:test/api"
-                    val token = maskinporten.token(target)
-                    val introspection = maskinporten.introspect(token.accessToken)
-                    call.respond(introspection)
+                    when (val response = maskinporten.token(target)) {
+                        is TokenResponse.Success -> {
+                            val introspection = maskinporten.introspect(response.accessToken)
+                            call.respond(introspection)
+                        }
+                        is TokenResponse.Error -> {
+                            call.respond(response.status, response.error)
+                        }
+                    }
                 }
 
                 get("*") {

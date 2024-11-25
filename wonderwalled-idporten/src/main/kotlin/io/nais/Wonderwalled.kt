@@ -1,30 +1,20 @@
 package io.nais
 
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.readRawBytes
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
-import io.ktor.server.cio.CIO
-import io.ktor.server.engine.embeddedServer
 import io.ktor.server.response.respond
-import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
-import io.nais.common.AppConfig
 import io.nais.common.AuthClient
 import io.nais.common.IdentityProvider
 import io.nais.common.NaisAuth
+import io.nais.common.TokenResponse
 import io.nais.common.bearerToken
-import io.nais.common.commonSetup
 import io.nais.common.requestHeaders
+import io.nais.common.server
 
 fun main() {
-    val config = AppConfig()
-
-    embeddedServer(CIO, port = config.port) {
-        commonSetup()
-
+    server { config ->
         val tokenx = AuthClient(config.auth, IdentityProvider.TOKEN_X)
         val idporten = AuthClient(config.auth, IdentityProvider.IDPORTEN)
 
@@ -63,11 +53,9 @@ fun main() {
                         return@get
                     }
 
-                    try {
-                        val exchange = tokenx.exchange(audience, token)
-                        call.respond(exchange)
-                    } catch (e: ClientRequestException) {
-                        call.respondBytes(e.response.readRawBytes(), e.response.contentType(), e.response.status)
+                    when (val response = tokenx.exchange(audience, token)) {
+                        is TokenResponse.Success -> call.respond(response)
+                        is TokenResponse.Error -> call.respond(response.status, response.error)
                     }
                 }
             }
