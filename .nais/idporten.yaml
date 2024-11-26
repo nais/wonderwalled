@@ -10,6 +10,9 @@ spec:
     inbound:
       rules:
         - application: wonderwalled-idporten
+    outbound:
+      rules:
+        - application: wonderwalled-idporten
   image: {{image}}
   port: 8080
   liveness:
