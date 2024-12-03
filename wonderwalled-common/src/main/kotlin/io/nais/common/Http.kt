@@ -103,3 +103,4 @@ fun ApplicationCall.bearerToken(): String? =
     request.authorization()
         ?.takeIf { it.startsWith("Bearer ", ignoreCase = true) }
         ?.removePrefix("Bearer ")
+        ?.removePrefix("bearer ")
