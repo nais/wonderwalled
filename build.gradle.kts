@@ -9,7 +9,7 @@ val opentelemetryKtorVersion = "2.10.0-alpha"
 
 plugins {
     application
-    kotlin("jvm") version "2.1.0"
+    kotlin("jvm") version "2.0.21"
     id("org.jmailen.kotlinter") version "4.5.0"
     id("com.github.ben-manes.versions") version "0.51.0"
     id("com.gradleup.shadow") version "8.3.5" apply false
