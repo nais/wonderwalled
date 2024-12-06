@@ -42,6 +42,7 @@ services:
       DOWNSTREAM_APP_NAME: myapplication
       DOWNSTREAM_APP_NAMESPACE: mynamespace
       DOWNSTREAM_APP_CLUSTER: mycluster
+      NAIS_POD_NAME: myapplication-d34db33f
     restart: on-failure
     env_file: "${ENV_FILE:-.env}"
     extra_hosts:
