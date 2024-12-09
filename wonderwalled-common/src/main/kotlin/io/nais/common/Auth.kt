@@ -50,6 +50,25 @@ data class TokenErrorResponse(
     val errorDescription: String,
 )
 
+/**
+ * TokenIntrospectionResponse represents the JSON response from the token introspection endpoint.
+ *
+ * The `other` field is a generic map that contains an arbitrary combination of additional claims contained in the token.
+ *
+ * If you know the exact claims to expect, you should instead explicitly define these as fields on the
+ * data class itself, for example:
+ *
+ * ```kotlin
+ * data class TokenIntrospectionResponse(
+ *   val active: Boolean,
+ *   @JsonInclude(JsonInclude.Include.NON_NULL)
+ *   val error: String?,
+ *   val sub: String,
+ *   @JsonProperty("preferred_username")
+ *   val username: String,
+ *   val exp: Long,
+ * )
+ */
 data class TokenIntrospectionResponse(
     val active: Boolean,
     @JsonInclude(JsonInclude.Include.NON_NULL)
