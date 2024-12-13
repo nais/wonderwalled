@@ -40,11 +40,6 @@ spec:
       enabled: true
   tokenx:
     enabled: true
-  maskinporten:
-    enabled: true
-    scopes:
-      consumes:
-        - name: nav:test/api
   observability:
     autoInstrumentation:
       enabled: true
