@@ -1,11 +1,11 @@
 import org.jetbrains.kotlin.daemon.common.trimQuotes
 
 val konfigVersion = "1.6.10.0"
-val ktorVersion = "3.0.3"
+val ktorVersion = "3.1.0"
 val logstashVersion = "8.0"
 val logbackVersion = "1.5.16"
 val opentelemetryVersion = "1.47.0"
-val opentelemetryKtorVersion = "2.12.0-alpha"
+val opentelemetryKtorVersion = "2.13.0-alpha"
 
 plugins {
     application
