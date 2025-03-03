@@ -21,10 +21,10 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.opentelemetry.api.GlobalOpenTelemetry
-import io.opentelemetry.instrumentation.ktor.v3_0.client.KtorClientTracing
-import io.opentelemetry.instrumentation.ktor.v3_0.server.KtorServerTracing
 import org.slf4j.event.Level
 import java.util.UUID
+import io.opentelemetry.instrumentation.ktor.v3_0.KtorClientTelemetry
+import io.opentelemetry.instrumentation.ktor.v3_0.KtorServerTelemetry
 import io.ktor.client.engine.cio.CIO as ClientCIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.server.cio.CIO as ServerCIO
@@ -40,7 +40,7 @@ fun defaultHttpClient() = HttpClient(ClientCIO) {
         }
     }
 
-    install(KtorClientTracing) {
+    install(KtorClientTelemetry) {
         setOpenTelemetry(GlobalOpenTelemetry.get())
     }
 }
@@ -71,7 +71,7 @@ fun server(
         callIdMdc("call_id")
     }
 
-    install(KtorServerTracing) {
+    install(KtorServerTelemetry) {
         setOpenTelemetry(GlobalOpenTelemetry.get())
     }
 

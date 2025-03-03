@@ -5,12 +5,11 @@ val ktorVersion = "3.1.1"
 val logstashVersion = "8.0"
 val logbackVersion = "1.5.17"
 val opentelemetryVersion = "1.47.0"
-val opentelemetryKtorVersion = "2.11.0-alpha"
+val opentelemetryKtorVersion = "2.13.3-alpha"
 
 plugins {
     application
     kotlin("jvm") version "2.1.10"
-    //id("org.jmailen.kotlinter") version "4.5.0"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("com.gradleup.shadow") version "8.3.6" apply false
 }
@@ -27,7 +26,6 @@ allprojects {
 subprojects {
     apply(plugin = "application")
     apply(plugin = "kotlin")
-    //apply(plugin = "org.jmailen.kotlinter")
     apply(plugin = "com.gradleup.shadow")
 
     application {
@@ -43,9 +41,6 @@ subprojects {
                 attributes["Main-Class"] = "io.nais.WonderwalledKt"
             }
         }
-        /*lintKotlin {
-            dependsOn("formatKotlin")
-        }*/
 
         withType<JavaExec>().named("run") {
             environment = file("$rootDir/.env")
@@ -72,7 +67,7 @@ subprojects {
         implementation("com.natpryce:konfig:${konfigVersion}")
         implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-3.0:${opentelemetryKtorVersion}")
         implementation("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
-        implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:$opentelemetryVersion");
+        implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:$opentelemetryVersion")
         implementation("io.opentelemetry:opentelemetry-exporter-otlp:${opentelemetryVersion}")
         implementation("io.opentelemetry:opentelemetry-extension-kotlin:${opentelemetryVersion}")
         implementation("net.logstash.logback:logstash-logback-encoder:${logstashVersion}")
