@@ -36,13 +36,18 @@ jobs:
         uses: gradle/actions/dependency-submission@94baf225fe0a508e581a564467443d0e2379123b # ratchet:gradle/actions/dependency-submission@v4
       - name: Build with Gradle
         run: ./gradlew clean wonderwalled-${{ matrix.module }}:build wonderwalled-${{ matrix.module }}:shadowJar
-      - name: Build and push image and SBOM to OCI registry
-        uses: nais/docker-build-push@v0
-        id: docker-build-push
+      - uses: nais/platform-build-push-sign@main # ratchet:exclude
+        id: build_push_sign
         with:
           name: wonderwalled-${{ matrix.module }}
           context: ./wonderwalled-${{ matrix.module }}
           dockerfile: ./wonderwalled-${{ matrix.module }}/Dockerfile
+          google_service_account: gh-wonderwalled
+          multi-platform: true
+          push: true
+          workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
+      - uses: nais/login@v0 # ratchet:exclude
+        with:
           team: nais
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
