@@ -2,7 +2,7 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: "wonderwalled-azure"
-  namespace: "aura"
+  namespace: "nais"
   annotations:
     texas.nais.io/enabled: "true"
 spec:
