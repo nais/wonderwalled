@@ -11,14 +11,15 @@ import kotlin.coroutines.coroutineContext
 suspend fun <T> Tracer.withSpan(
     spanName: String,
     attributes: Attributes? = null,
-    block: suspend (span: Span) -> T
+    block: suspend (span: Span) -> T,
 ): T {
-    val span: Span = this.spanBuilder(spanName).run {
-        if (attributes != null) {
-            setAllAttributes(attributes)
+    val span: Span =
+        this.spanBuilder(spanName).run {
+            if (attributes != null) {
+                setAllAttributes(attributes)
+            }
+            startSpan()
         }
-        startSpan()
-    }
 
     return withContext(coroutineContext + span.asContextElement()) {
         try {

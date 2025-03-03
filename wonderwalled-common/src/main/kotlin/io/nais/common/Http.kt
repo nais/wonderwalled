@@ -21,33 +21,34 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.opentelemetry.api.GlobalOpenTelemetry
-import org.slf4j.event.Level
-import java.util.UUID
 import io.opentelemetry.instrumentation.ktor.v3_0.KtorClientTelemetry
 import io.opentelemetry.instrumentation.ktor.v3_0.KtorServerTelemetry
+import org.slf4j.event.Level
+import java.util.UUID
 import io.ktor.client.engine.cio.CIO as ClientCIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.server.cio.CIO as ServerCIO
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation as ServerContentNegotiation
 
-fun defaultHttpClient() = HttpClient(ClientCIO) {
-    expectSuccess = true
-    install(ClientContentNegotiation) {
-        jackson {
-            deserializationConfig.apply {
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+fun defaultHttpClient() =
+    HttpClient(ClientCIO) {
+        expectSuccess = true
+        install(ClientContentNegotiation) {
+            jackson {
+                deserializationConfig.apply {
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                }
             }
+        }
+
+        install(KtorClientTelemetry) {
+            setOpenTelemetry(GlobalOpenTelemetry.get())
         }
     }
 
-    install(KtorClientTelemetry) {
-        setOpenTelemetry(GlobalOpenTelemetry.get())
-    }
-}
-
 fun server(
     config: Config = Config(),
-    module: Application.(Config) -> Unit
+    module: Application.(Config) -> Unit,
 ) = embeddedServer(ServerCIO, port = config.port) {
     install(ServerContentNegotiation) {
         jackson {
@@ -100,7 +101,8 @@ fun ApplicationCall.requestHeaders(): Map<String, String> =
         .associate { header -> header.key to header.value.joinToString() }
 
 fun ApplicationCall.bearerToken(): String? =
-    request.authorization()
+    request
+        .authorization()
         ?.takeIf { it.startsWith("Bearer ", ignoreCase = true) }
         ?.removePrefix("Bearer ")
         ?.removePrefix("bearer ")

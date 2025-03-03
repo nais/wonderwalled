@@ -23,7 +23,9 @@ import io.opentelemetry.api.trace.Tracer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-enum class IdentityProvider(@JsonValue val alias: String) {
+enum class IdentityProvider(
+    @JsonValue val alias: String,
+) {
     MASKINPORTEN("maskinporten"),
     AZURE_AD("azuread"),
     IDPORTEN("idporten"),
@@ -84,43 +86,63 @@ class AuthClient(
 ) {
     private val tracer: Tracer = GlobalOpenTelemetry.get().getTracer("io.nais.common.AuthClient")
 
-    suspend fun token(target: String): TokenResponse = try {
-        tracer.withSpan("AuthClient/token (${provider.alias})", traceAttributes(target)) {
-            httpClient.submitForm(config.tokenEndpoint, parameters {
-                set("target", target)
-                set("identity_provider", provider.alias)
-            }).body<TokenResponse.Success>()
+    suspend fun token(target: String): TokenResponse =
+        try {
+            tracer.withSpan("AuthClient/token (${provider.alias})", traceAttributes(target)) {
+                httpClient
+                    .submitForm(
+                        config.tokenEndpoint,
+                        parameters {
+                            set("target", target)
+                            set("identity_provider", provider.alias)
+                        },
+                    ).body<TokenResponse.Success>()
+            }
+        } catch (e: ResponseException) {
+            TokenResponse.Error(e.response.body<TokenErrorResponse>(), e.response.status)
         }
-    } catch (e: ResponseException) {
-        TokenResponse.Error(e.response.body<TokenErrorResponse>(), e.response.status)
-    }
 
-    suspend fun exchange(target: String, userToken: String): TokenResponse = try {
-        tracer.withSpan("AuthClient/exchange (${provider.alias})", traceAttributes(target)) {
-            httpClient.submitForm(config.tokenExchangeEndpoint, parameters {
-                set("target", target)
-                set("user_token", userToken)
-                set("identity_provider", provider.alias)
-            }).body<TokenResponse.Success>()
+    suspend fun exchange(
+        target: String,
+        userToken: String,
+    ): TokenResponse =
+        try {
+            tracer.withSpan("AuthClient/exchange (${provider.alias})", traceAttributes(target)) {
+                httpClient
+                    .submitForm(
+                        config.tokenExchangeEndpoint,
+                        parameters {
+                            set("target", target)
+                            set("user_token", userToken)
+                            set("identity_provider", provider.alias)
+                        },
+                    ).body<TokenResponse.Success>()
+            }
+        } catch (e: ResponseException) {
+            TokenResponse.Error(e.response.body<TokenErrorResponse>(), e.response.status)
         }
-    } catch (e: ResponseException) {
-        TokenResponse.Error(e.response.body<TokenErrorResponse>(), e.response.status)
-    }
 
     suspend fun introspect(accessToken: String): TokenIntrospectionResponse =
         tracer.withSpan("AuthClient/introspect (${provider.alias})", traceAttributes()) {
-            httpClient.submitForm(config.tokenIntrospectionEndpoint, parameters {
-                set("token", accessToken)
-                set("identity_provider", provider.alias)
-            }).body()
+            httpClient
+                .submitForm(
+                    config.tokenIntrospectionEndpoint,
+                    parameters {
+                        set("token", accessToken)
+                        set("identity_provider", provider.alias)
+                    },
+                ).body()
         }
 
-    private fun traceAttributes(target: String? = null) = Attributes.builder().apply {
-        put(attributeKeyIdentityProvider, provider.alias)
-        if (target != null) {
-            put(attributeKeyTarget, target)
-        }
-    }.build()
+    private fun traceAttributes(target: String? = null) =
+        Attributes
+            .builder()
+            .apply {
+                put(attributeKeyIdentityProvider, provider.alias)
+                if (target != null) {
+                    put(attributeKeyTarget, target)
+                }
+            }.build()
 
     companion object {
         private val attributeKeyTarget: AttributeKey<String> = AttributeKey.stringKey("target")
@@ -134,57 +156,60 @@ class AuthPluginConfiguration(
     var logger: Logger = LoggerFactory.getLogger("io.nais.common.ktor.NaisAuth"),
 )
 
-val NaisAuth = createRouteScopedPlugin(
-    name = "NaisAuth",
-    createConfiguration = ::AuthPluginConfiguration,
-) {
-    val logger = pluginConfig.logger
-    val client = pluginConfig.client ?: throw IllegalArgumentException("NaisAuth plugin: client must be set")
-    val ingress = pluginConfig.ingress ?: ""
+val NaisAuth =
+    createRouteScopedPlugin(
+        name = "NaisAuth",
+        createConfiguration = ::AuthPluginConfiguration,
+    ) {
+        val logger = pluginConfig.logger
+        val client = pluginConfig.client ?: throw IllegalArgumentException("NaisAuth plugin: client must be set")
+        val ingress = pluginConfig.ingress ?: ""
 
-    val challenge: suspend (ApplicationCall) -> Unit = { call ->
-        val target = call.loginUrl(ingress)
-        logger.info("unauthenticated: redirecting to '$target'")
-        call.respondRedirect(target)
-    }
-
-    pluginConfig.apply {
-        onCall { call ->
-            val token = call.bearerToken()
-            if (token == null) {
-                logger.warn("unauthenticated: no Bearer token found in Authorization header")
-                challenge(call)
-                return@onCall
-            }
-
-            val introspectResponse = try {
-                client.introspect(token)
-            } catch (e: Exception) {
-                logger.error("unauthenticated: introspect request failed: ${e.message}")
-                challenge(call)
-                return@onCall
-            }
-
-            if (introspectResponse.active) {
-                logger.info("authenticated - claims='${introspectResponse.other}'")
-                return@onCall
-            }
-
-            logger.warn("unauthenticated: ${introspectResponse.error}")
-            challenge(call)
-            return@onCall
+        val challenge: suspend (ApplicationCall) -> Unit = { call ->
+            val target = call.loginUrl(ingress)
+            logger.info("unauthenticated: redirecting to '$target'")
+            call.respondRedirect(target)
         }
-    }
 
-    logger.info("NaisAuth plugin loaded.")
-}
+        pluginConfig.apply {
+            onCall { call ->
+                val token = call.bearerToken()
+                if (token == null) {
+                    logger.warn("unauthenticated: no Bearer token found in Authorization header")
+                    challenge(call)
+                    return@onCall
+                }
+
+                val introspectResponse =
+                    try {
+                        client.introspect(token)
+                    } catch (e: Exception) {
+                        logger.error("unauthenticated: introspect request failed: ${e.message}")
+                        challenge(call)
+                        return@onCall
+                    }
+
+                if (introspectResponse.active) {
+                    logger.info("authenticated - claims='${introspectResponse.other}'")
+                    return@onCall
+                }
+
+                logger.warn("unauthenticated: ${introspectResponse.error}")
+                challenge(call)
+                return@onCall
+            }
+        }
+
+        logger.info("NaisAuth plugin loaded.")
+    }
 
 // loginUrl constructs a URL string that points to the login endpoint (Wonderwall) for redirecting a request.
 // It also indicates that the user should be redirected back to the original request path after authentication
 private fun ApplicationCall.loginUrl(defaultHost: String): String {
-    val host = defaultHost.ifEmpty(defaultValue = {
-        "${this.request.local.scheme}://${this.request.host()}"
-    })
+    val host =
+        defaultHost.ifEmpty(defaultValue = {
+            "${this.request.local.scheme}://${this.request.host()}"
+        })
 
     return "$host/oauth2/login?redirect=${this.request.uri}"
 }
