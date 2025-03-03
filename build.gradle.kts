@@ -10,6 +10,7 @@ val opentelemetryKtorVersion = "2.13.3-alpha"
 plugins {
     application
     kotlin("jvm") version "2.1.10"
+    id("org.jmailen.kotlinter") version "5.0.0"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("com.gradleup.shadow") version "8.3.6" apply false
 }
@@ -26,6 +27,7 @@ allprojects {
 subprojects {
     apply(plugin = "application")
     apply(plugin = "kotlin")
+    apply(plugin = "org.jmailen.kotlinter")
     apply(plugin = "com.gradleup.shadow")
 
     application {
@@ -40,6 +42,10 @@ subprojects {
             manifest {
                 attributes["Main-Class"] = "io.nais.WonderwalledKt"
             }
+        }
+
+        lintKotlin {
+            dependsOn("formatKotlin")
         }
 
         withType<JavaExec>().named("run") {
