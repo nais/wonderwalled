@@ -2,9 +2,7 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: "tokenx-token-generator"
-  namespace: "aura"
-  labels:
-    team: "aura"
+  namespace: "nais"
   annotations:
     texas.nais.io/enabled: "true"
 spec:
