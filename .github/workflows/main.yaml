@@ -48,7 +48,6 @@ jobs:
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
       - uses: nais/deploy/actions/deploy@v2 # ratchet:exclude
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: .nais/${{ matrix.module }}.yaml
           IMAGE: ${{ steps.build_push_sign.outputs.tag }}
