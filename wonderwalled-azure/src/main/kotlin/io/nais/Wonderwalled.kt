@@ -1,75 +1,82 @@
 package io.nais
 
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.principal
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.nais.common.AuthClient
 import io.nais.common.IdentityProvider
-import io.nais.common.NaisAuth
+import io.nais.common.TexasPrincipal
 import io.nais.common.TokenResponse
 import io.nais.common.bearerToken
 import io.nais.common.requestHeaders
 import io.nais.common.server
+import io.nais.common.texas
 
 fun main() {
     server { config ->
         val azure = AuthClient(config.auth, IdentityProvider.AZURE_AD)
 
+        install(Authentication) {
+            texas {
+                client = azure
+                ingress = config.ingress
+            }
+        }
+
         routing {
-            route("api") {
-                install(NaisAuth) {
-                    client = azure
-                    ingress = config.ingress
-                }
-
-                get("headers") {
-                    call.respond(call.requestHeaders())
-                }
-
-                get("me") {
-                    val token = call.bearerToken()
-                    if (token == null) {
-                        call.respond(HttpStatusCode.Unauthorized, "missing bearer token in Authorization header")
-                        return@get
+            authenticate {
+                route("api") {
+                    get("headers") {
+                        call.respond(call.requestHeaders())
                     }
 
-                    val introspection = azure.introspect(token)
-                    call.respond(introspection)
-                }
-
-                get("obo") {
-                    val token = call.bearerToken()
-                    if (token == null) {
-                        call.respond(HttpStatusCode.Unauthorized, "missing bearer token in Authorization header")
-                        return@get
+                    get("me") {
+                        val principal = call.principal<TexasPrincipal>()
+                        if (principal == null) {
+                            call.respond(HttpStatusCode.Unauthorized, "missing principal")
+                            return@get
+                        }
+                        call.respond(principal.claims)
                     }
 
-                    val audience = call.request.queryParameters["aud"]
-                    if (audience == null) {
-                        call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
-                        return@get
+                    get("obo") {
+                        val token = call.bearerToken()
+                        if (token == null) {
+                            call.respond(HttpStatusCode.Unauthorized, "missing bearer token in Authorization header")
+                            return@get
+                        }
+
+                        val audience = call.request.queryParameters["aud"]
+                        if (audience == null) {
+                            call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
+                            return@get
+                        }
+
+                        val target = audience.toScope()
+                        when (val response = azure.exchange(target, token)) {
+                            is TokenResponse.Success -> call.respond(response)
+                            is TokenResponse.Error -> call.respond(response.status, response.error)
+                        }
                     }
 
-                    val target = audience.toScope()
-                    when (val response = azure.exchange(target, token)) {
-                        is TokenResponse.Success -> call.respond(response)
-                        is TokenResponse.Error -> call.respond(response.status, response.error)
-                    }
-                }
+                    get("m2m") {
+                        val audience = call.request.queryParameters["aud"]
+                        if (audience == null) {
+                            call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
+                            return@get
+                        }
 
-                get("m2m") {
-                    val audience = call.request.queryParameters["aud"]
-                    if (audience == null) {
-                        call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
-                        return@get
-                    }
-
-                    val target = audience.toScope()
-                    when (val response = azure.token(target)) {
-                        is TokenResponse.Success -> call.respond(response)
-                        is TokenResponse.Error -> call.respond(response.status, response.error)
+                        val target = audience.toScope()
+                        when (val response = azure.token(target)) {
+                            is TokenResponse.Success -> call.respond(response)
+                            is TokenResponse.Error -> call.respond(response.status, response.error)
+                        }
                     }
                 }
             }

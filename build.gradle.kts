@@ -64,6 +64,7 @@ subprojects {
     dependencies {
         implementation(kotlin("stdlib"))
         implementation("io.ktor:ktor-server:${ktorVersion}")
+        implementation("io.ktor:ktor-server-auth:${ktorVersion}")
         implementation("io.ktor:ktor-server-cio:${ktorVersion}")
         implementation("io.ktor:ktor-server-content-negotiation:${ktorVersion}")
         implementation("io.ktor:ktor-serialization-jackson:${ktorVersion}")
