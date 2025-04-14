@@ -5,7 +5,7 @@ val ktorVersion = "3.1.2"
 val logstashVersion = "8.1"
 val logbackVersion = "1.5.18"
 val opentelemetryVersion = "1.49.0"
-val opentelemetryKtorVersion = "2.14.0-alpha"
+val opentelemetryKtorVersion = "2.15.0-alpha"
 
 plugins {
     application
