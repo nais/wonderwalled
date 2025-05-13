@@ -101,6 +101,7 @@ class AuthClient(
                         parameters {
                             set("target", target)
                             set("identity_provider", provider.alias)
+                            set("skip_cache", "true")
                         },
                     ).body<TokenResponse.Success>()
             }
@@ -121,6 +122,7 @@ class AuthClient(
                             set("target", target)
                             set("user_token", userToken)
                             set("identity_provider", provider.alias)
+                            set("skip_cache", "true")
                         },
                     ).body<TokenResponse.Success>()
             }
