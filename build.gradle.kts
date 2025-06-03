@@ -81,3 +81,12 @@ subprojects {
         runtimeOnly("ch.qos.logback:logback-classic:${logbackVersion}")
     }
 }
+
+tasks {
+    named("dependencyUpdates", com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask::class).configure {
+        val immaturityLevels = listOf("rc", "cr", "m", "beta", "alpha", "preview") // order is important
+        val immaturityRegexes = immaturityLevels.map { ".*[.\\-]$it[.\\-\\d]*".toRegex(RegexOption.IGNORE_CASE) }
+        fun immaturityLevel(version: String): Int = immaturityRegexes.indexOfLast { version.matches(it) }
+        rejectVersionIf { immaturityLevel(candidate.version) > immaturityLevel(currentVersion) }
+    }
+}
