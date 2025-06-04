@@ -87,7 +87,7 @@ fun main() {
                     val audience = call.request.queryParameters["aud"]
                     if (audience == null) {
                         call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
-                        return@get
+                        return@post
                     }
 
                     val target = audience.toScope()
@@ -101,7 +101,9 @@ fun main() {
     }.start(wait = true)
 }
 
-private fun String.toScope(): String = when (this) {
-    "https://graph.microsoft.com/.default" -> this
-    else -> "api://${this.replace(":", ".")}/.default"
-}
+private fun String.toScope(): String =
+    if (this.startsWith("https://") || this.startsWith("api://")) {
+        this
+    } else {
+        "api://${this.replace(":", ".")}/.default"
+    }

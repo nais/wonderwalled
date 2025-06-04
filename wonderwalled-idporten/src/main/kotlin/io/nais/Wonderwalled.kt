@@ -85,16 +85,21 @@ fun main() {
                     }
                     val acr = formParameters["acr"] ?: "idporten-loa-high"
                     if (acr !in listOf("idporten-loa-high", "idporten-loa-substantial")) {
-                        call.respond(HttpStatusCode.BadRequest, "invalid 'acr' form parameter, must be 'idporten-loa-high' or 'idporten-loa-substantial'")
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            "invalid 'acr' form parameter, must be 'idporten-loa-high' or 'idporten-loa-substantial'",
+                        )
                         return@post
                     }
 
-                    val token = httpClient.get("https://fakedings.intern.dev.nav.no/fake/idporten") {
-                        url {
-                            parameter("pid", pid)
-                            parameter("acr", acr)
-                        }
-                    }.body<String>()
+                    val token =
+                        httpClient
+                            .get("https://fakedings.intern.dev.nav.no/fake/idporten") {
+                                url {
+                                    parameter("pid", pid)
+                                    parameter("acr", acr)
+                                }
+                            }.body<String>()
 
                     val audience = formParameters["aud"]
                     if (audience == null) {
