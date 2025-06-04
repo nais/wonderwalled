@@ -80,8 +80,27 @@ fun main() {
                     }
                 }
             }
+
+            route("api/public") {
+                get("m2m") {
+                    val audience = call.request.queryParameters["aud"]
+                    if (audience == null) {
+                        call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
+                        return@get
+                    }
+
+                    val target = audience.toScope()
+                    when (val response = azure.token(target)) {
+                        is TokenResponse.Success -> call.respond(response.accessToken)
+                        is TokenResponse.Error -> call.respond(response.status, response.error)
+                    }
+                }
+            }
         }
     }.start(wait = true)
 }
 
-private fun String.toScope(): String = "api://${this.replace(":", ".")}/.default"
+private fun String.toScope(): String = when (this) {
+    "https://graph.microsoft.com/.default" -> this
+    else -> "api://${this.replace(":", ".")}/.default"
+}

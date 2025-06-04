@@ -23,16 +23,37 @@ Requires (almost) all requests received to contain a Bearer token issued by the 
 - Requires login with Azure AD.
 - API for fetching machine-to-machine tokens from Maskinporten.
 
-## Endpoints:
+## Endpoints
+
+Common endpoints for all identity providers:
 
 - `/internal/*` - unauthenticated
-  - `/internal/is_alive`
-  - `/internal/is_ready`
+  - `GET /internal/is_alive`
+  - `GET /internal/is_ready`
 - `/api/*` - requires a Bearer JWT access token in the `Authorization` header
-  - `/api/headers` - prints all headers in the request
-  - `/api/me` - prints all claims for the token received
-  - `/api/obo?aud=<cluster>:<namespace>:<app>` - exchanges the subject token for the given `aud` (audience)
-  - `/api/m2m?aud=<cluster>:<namespace>:<app>` - (Azure only) fetches a machine-to-machine token for the given `aud` (audience)
+  - `GET /api/headers` - prints all headers in the request
+  - `GET /api/me` - prints all claims for the authenticated user's token
+
+### Endpoints for ID-porten
+
+- `/api/*` - requires a Bearer JWT access token in the `Authorization` header
+  - `GET /api/obo?aud=<cluster>:<namespace>:<app>` - exchanges the authenticated user's token for the given `aud` (audience)
+- `/api/public/*` - unauthenticated, for headless or scripting use
+  - `POST /api/public/obo?aud=<cluster>:<namespace>:<app>&pid=<pid>[&acr=idporten-loa-high]` - headlessly fetches a fake subject token with the given `pid` and optionally `acr`, and exchanges this for a new token for the given `aud` (audience)
+
+### Endpoints for Azure AD
+
+- `/api/*` - requires a Bearer JWT access token in the `Authorization` header
+  - `GET /api/obo?aud=<cluster>:<namespace>:<app>` - exchanges the authenticated user's token for the given `aud` (audience)
+  - `GET /api/m2m?aud=<cluster>:<namespace>:<app>` - returns a machine-to-machine token for the given `aud` (audience)
+- `/api/public/*` - unauthenticated, for headless or scripting use
+  - `POST /api/public/m2m?aud=<cluster>:<namespace>:<app>` - returns a machine-to-machine token for the given `aud` (audience)
+
+### Endpoints for Maskinporten
+
+- `/api/*` - requires a Bearer JWT access token in the `Authorization` header
+  - `GET /api/token[?scope=nav:test/api]` - returns a machine-to-machine token with the given scope
+  - `GET /api/introspect[?scope=nav:test/api]` - returns the introspection result for a machine-to-machine token with the given scope
 
 ## Development
 
