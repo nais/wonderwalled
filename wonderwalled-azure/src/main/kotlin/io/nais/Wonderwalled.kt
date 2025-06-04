@@ -7,6 +7,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.principal
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.nais.common.AuthClient
@@ -82,7 +83,7 @@ fun main() {
             }
 
             route("api/public") {
-                get("m2m") {
+                post("m2m") {
                     val audience = call.request.queryParameters["aud"]
                     if (audience == null) {
                         call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
