@@ -42,3 +42,7 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: sdk
+  accessPolicy:
+    outbound:
+      external:
+        - host: fakedings.intern.dev.nav.no

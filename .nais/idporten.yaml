@@ -13,6 +13,8 @@ spec:
     outbound:
       rules:
         - application: wonderwalled-idporten
+      external:
+        - host: fakedings.intern.dev.nav.no
   image: {{image}}
   port: 8080
   liveness:
