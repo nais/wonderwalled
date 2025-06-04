@@ -84,8 +84,8 @@ fun main() {
                         return@post
                     }
                     val acr = formParameters["acr"] ?: "idporten-loa-high"
-                    if (acr != "idporten-loa-high" && acr != "idporten-loa-low") {
-                        call.respond(HttpStatusCode.BadRequest, "invalid 'acr' form parameter, must be 'idporten-loa-high' or 'idporten-loa-low'")
+                    if (acr !in listOf("idporten-loa-high", "idporten-loa-substantial")) {
+                        call.respond(HttpStatusCode.BadRequest, "invalid 'acr' form parameter, must be 'idporten-loa-high' or 'idporten-loa-substantial'")
                         return@post
                     }
 
