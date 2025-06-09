@@ -4,13 +4,13 @@ val konfigVersion = "1.6.10.0"
 val ktorVersion = "3.1.3"
 val logstashVersion = "8.1"
 val logbackVersion = "1.5.18"
-val opentelemetryVersion = "1.50.0"
+val opentelemetryVersion = "1.51.0"
 val opentelemetryKtorVersion = "2.16.0-alpha"
 
 plugins {
     application
     kotlin("jvm") version "2.1.21"
-    id("org.jmailen.kotlinter") version "5.1.0"
+    id("org.jmailen.kotlinter") version "5.1.1"
     id("com.github.ben-manes.versions") version "0.52.0"
     id("com.gradleup.shadow") version "8.3.6" apply false
 }
