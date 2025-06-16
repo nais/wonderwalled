@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.daemon.common.trimQuotes
 
 val konfigVersion = "1.6.10.0"
-val ktorVersion = "3.1.3"
+val ktorVersion = "3.2.0"
 val logstashVersion = "8.1"
 val logbackVersion = "1.5.18"
 val opentelemetryVersion = "1.51.0"
