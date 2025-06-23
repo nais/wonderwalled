@@ -140,7 +140,34 @@ fun AuthenticationConfig.texas(
 }
 
 /**
- * TexasAuthenticationProvider is an [io.ktor.server.auth.AuthenticationProvider] that validates tokens by using Texas's introspection endpoint.
+ * TexasAuthenticationProvider is an [io.ktor.server.auth.AuthenticationProvider] that requires Bearer tokens in the
+ * Authorization header for incoming HTTP requests. It validates these tokens by using Texas's introspection endpoint.
+ *
+ * Invalid credentials result in a HTTP redirect to login endpoint provided by Wonderwall.
+ * This makes sense if Wonderwall runs in front of this application, i.e. if the frontend is served by this application.
+ *
+ * If this is a standalone API, you want to respond with an HTTP 401 Unauthorized instead. This allows
+ * the calling client, such as a backend-for-frontend, to appropriately handle the response instead of redirecting
+ * a resource request which often results in a CORS error. For standalone APIs, consider implementing authentication
+ * with [io.ktor.server.auth.bearer] instead. For example (simplified, with error handling and logging omitted):
+ *
+ * ```kotlin
+ * install(Authentication) {
+ *   bearer("some-provider") {
+ *     authenticate { credentials ->
+ *       val introspectResponse = authClient.introspect(credentials.token)
+ *       return@authenticate if (introspectResponse.active) {
+ *         TexasPrincipal(
+ *           claims = introspectResponse.claims,
+ *           token = credentials.token,
+ *         )
+ *       } else {
+ *         null
+ *       }
+ *     }
+ *   }
+ * }
+ * ```
  */
 class TexasAuthenticationProvider(
     config: Config,
@@ -223,7 +250,24 @@ class TexasAuthenticationProvider(
 /**
  * TexasPrincipal represents the authenticated principal.
  * The `claims` field is a map of arbitrary claims from the [TokenIntrospectionResponse].
- * TODO(user): You should explicitly define expected claims as fields on the data class itself instead of using a generic map.
+ *
+ * TODO(user): If you know the exact claims to expect, you should instead explicitly define these as fields on the
+ *  data class itself and ignore everything else, for example:
+ *
+ * ```kotlin
+ * data class TexasPrincipal(
+ *   val claims: Claims,
+ *   val token: String,
+ * )
+ *
+ * data class Claims(
+ *   val subject: String,
+ *   val email String,
+ *   val familyName: String,
+ *   val givenName: String,
+ *   ...
+ * )
+ * ```
  */
 data class TexasPrincipal(
     val claims: Map<String, Any?>,
