@@ -12,7 +12,6 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
-import io.ktor.server.request.authorization
 import io.ktor.server.request.path
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
@@ -99,10 +98,3 @@ fun ApplicationCall.requestHeaders(): Map<String, String> =
         .headers
         .entries()
         .associate { header -> header.key to header.value.joinToString() }
-
-fun ApplicationCall.bearerToken(): String? =
-    request
-        .authorization()
-        ?.takeIf { it.startsWith("Bearer ", ignoreCase = true) }
-        ?.removePrefix("Bearer ")
-        ?.removePrefix("bearer ")

@@ -18,7 +18,6 @@ import io.nais.common.AuthClient
 import io.nais.common.IdentityProvider
 import io.nais.common.TexasPrincipal
 import io.nais.common.TokenResponse
-import io.nais.common.bearerToken
 import io.nais.common.defaultHttpClient
 import io.nais.common.requestHeaders
 import io.nais.common.server
@@ -54,9 +53,9 @@ fun main() {
                     }
 
                     get("obo") {
-                        val token = call.bearerToken()
-                        if (token == null) {
-                            call.respond(HttpStatusCode.Unauthorized, "missing bearer token in Authorization header")
+                        val principal = call.principal<TexasPrincipal>()
+                        if (principal == null) {
+                            call.respond(HttpStatusCode.Unauthorized, "missing principal")
                             return@get
                         }
 
@@ -66,7 +65,7 @@ fun main() {
                             return@get
                         }
 
-                        when (val response = tokenx.exchange(audience, token)) {
+                        when (val response = tokenx.exchange(audience, principal.token)) {
                             is TokenResponse.Success -> call.respond(response)
                             is TokenResponse.Error -> call.respond(response.status, response.error)
                         }

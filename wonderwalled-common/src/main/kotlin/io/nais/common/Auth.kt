@@ -10,12 +10,15 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.forms.submitForm
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.auth.AuthScheme
+import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.http.parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.AuthenticationConfig
 import io.ktor.server.auth.AuthenticationContext
 import io.ktor.server.auth.AuthenticationFailedCause
 import io.ktor.server.auth.AuthenticationProvider
+import io.ktor.server.auth.parseAuthorizationHeader
 import io.ktor.server.request.host
 import io.ktor.server.request.uri
 import io.ktor.server.response.respondRedirect
@@ -69,6 +72,7 @@ data class TokenErrorResponse(
  *   val username: String,
  *   val exp: Long,
  * )
+ * ```
  */
 data class TokenIntrospectionResponse(
     val active: Boolean,
@@ -157,7 +161,10 @@ class TexasAuthenticationProvider(
 
     override suspend fun onAuthenticate(context: AuthenticationContext) {
         val applicationCall = context.call
-        val token = applicationCall.bearerToken()
+        val token =
+            (applicationCall.request.parseAuthorizationHeader() as? HttpAuthHeader.Single)
+                ?.takeIf { header -> header.authScheme.lowercase() == AuthScheme.Bearer.lowercase() }
+                ?.blob
 
         if (token == null) {
             logger.warn("unauthenticated: no Bearer token found in Authorization header")
