@@ -76,7 +76,6 @@ subprojects {
         implementation("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
         implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:$opentelemetryVersion")
         implementation("io.opentelemetry:opentelemetry-exporter-otlp:${opentelemetryVersion}")
-        implementation("io.opentelemetry:opentelemetry-extension-kotlin:${opentelemetryVersion}")
         implementation("net.logstash.logback:logstash-logback-encoder:${logstashVersion}")
         runtimeOnly("ch.qos.logback:logback-classic:${logbackVersion}")
     }

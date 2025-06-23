@@ -19,10 +19,6 @@ import io.ktor.server.auth.AuthenticationProvider
 import io.ktor.server.request.host
 import io.ktor.server.request.uri
 import io.ktor.server.response.respondRedirect
-import io.opentelemetry.api.GlobalOpenTelemetry
-import io.opentelemetry.api.common.AttributeKey
-import io.opentelemetry.api.common.Attributes
-import io.opentelemetry.api.trace.Tracer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -82,29 +78,22 @@ data class TokenIntrospectionResponse(
     val other: Map<String, Any?> = mutableMapOf(),
 )
 
-/**
- * AuthClient is a client that interacts with Texas.
- */
 class AuthClient(
     private val config: Config.Auth,
     private val provider: IdentityProvider,
     private val httpClient: HttpClient = defaultHttpClient(),
 ) {
-    private val tracer: Tracer = GlobalOpenTelemetry.get().getTracer("io.nais.common.AuthClient")
-
     suspend fun token(target: String): TokenResponse =
         try {
-            tracer.withSpan("AuthClient/token (${provider.alias})", traceAttributes(target)) {
-                httpClient
-                    .submitForm(
-                        config.tokenEndpoint,
-                        parameters {
-                            set("target", target)
-                            set("identity_provider", provider.alias)
-                            set("skip_cache", "true")
-                        },
-                    ).body<TokenResponse.Success>()
-            }
+            httpClient
+                .submitForm(
+                    config.tokenEndpoint,
+                    parameters {
+                        set("target", target)
+                        set("identity_provider", provider.alias)
+                        set("skip_cache", "true")
+                    },
+                ).body<TokenResponse.Success>()
         } catch (e: ResponseException) {
             TokenResponse.Error(e.response.body<TokenErrorResponse>(), e.response.status)
         }
@@ -114,48 +103,29 @@ class AuthClient(
         userToken: String,
     ): TokenResponse =
         try {
-            tracer.withSpan("AuthClient/exchange (${provider.alias})", traceAttributes(target)) {
-                httpClient
-                    .submitForm(
-                        config.tokenExchangeEndpoint,
-                        parameters {
-                            set("target", target)
-                            set("user_token", userToken)
-                            set("identity_provider", provider.alias)
-                            set("skip_cache", "true")
-                        },
-                    ).body<TokenResponse.Success>()
-            }
+            httpClient
+                .submitForm(
+                    config.tokenExchangeEndpoint,
+                    parameters {
+                        set("target", target)
+                        set("user_token", userToken)
+                        set("identity_provider", provider.alias)
+                        set("skip_cache", "true")
+                    },
+                ).body<TokenResponse.Success>()
         } catch (e: ResponseException) {
             TokenResponse.Error(e.response.body<TokenErrorResponse>(), e.response.status)
         }
 
     suspend fun introspect(accessToken: String): TokenIntrospectionResponse =
-        tracer.withSpan("AuthClient/introspect (${provider.alias})", traceAttributes()) {
-            httpClient
-                .submitForm(
-                    config.tokenIntrospectionEndpoint,
-                    parameters {
-                        set("token", accessToken)
-                        set("identity_provider", provider.alias)
-                    },
-                ).body()
-        }
-
-    private fun traceAttributes(target: String? = null) =
-        Attributes
-            .builder()
-            .apply {
-                put(attributeKeyIdentityProvider, provider.alias)
-                if (target != null) {
-                    put(attributeKeyTarget, target)
-                }
-            }.build()
-
-    companion object {
-        private val attributeKeyTarget: AttributeKey<String> = AttributeKey.stringKey("target")
-        private val attributeKeyIdentityProvider: AttributeKey<String> = AttributeKey.stringKey("identity_provider")
-    }
+        httpClient
+            .submitForm(
+                config.tokenIntrospectionEndpoint,
+                parameters {
+                    set("token", accessToken)
+                    set("identity_provider", provider.alias)
+                },
+            ).body()
 }
 
 fun AuthenticationConfig.texas(
