@@ -3,8 +3,6 @@ kind: "Application"
 metadata:
   name: "tokenx-token-generator"
   namespace: "nais"
-  annotations:
-    texas.nais.io/enabled: "true"
 spec:
   image: {{image}}
   port: 8080

@@ -3,8 +3,6 @@ kind: "Application"
 metadata:
   name: "wonderwalled-azure"
   namespace: "nais"
-  annotations:
-    texas.nais.io/enabled: "true"
 spec:
   image: {{image}}
   port: 8080
