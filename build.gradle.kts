@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.daemon.common.trimQuotes
 
 val konfigVersion = "1.6.10.0"
-val ktorVersion = "3.2.0"
+val ktorVersion = "3.2.1"
 val logstashVersion = "8.1"
 val logbackVersion = "1.5.18"
 val opentelemetryVersion = "1.51.0"
@@ -12,7 +12,7 @@ plugins {
     kotlin("jvm") version "2.2.0"
     id("org.jmailen.kotlinter") version "5.1.1"
     id("com.github.ben-manes.versions") version "0.52.0"
-    id("com.gradleup.shadow") version "8.3.7" apply false
+    id("com.gradleup.shadow") version "8.3.8" apply false
 }
 
 allprojects {
