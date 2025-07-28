@@ -8,7 +8,6 @@ import io.ktor.server.auth.principal
 import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
-import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.nais.common.AuthClient
@@ -78,23 +77,6 @@ fun main() {
                             is TokenResponse.Success -> call.respond(response)
                             is TokenResponse.Error -> call.respond(response.status, response.error)
                         }
-                    }
-                }
-            }
-
-            route("api/public") {
-                post("m2m") {
-                    val formParameters = call.receiveParameters()
-                    val audience = formParameters["aud"]
-                    if (audience == null) {
-                        call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
-                        return@post
-                    }
-
-                    val target = audience.toScope()
-                    when (val response = azure.token(target)) {
-                        is TokenResponse.Success -> call.respond(response.accessToken)
-                        is TokenResponse.Error -> call.respond(response.status, response.error)
                     }
                 }
             }

@@ -1,2 +1,9 @@
 rootProject.name = "wonderwalled"
-include("wonderwalled-common", "wonderwalled-azure", "wonderwalled-idporten", "wonderwalled-maskinporten")
+include(
+    "wonderwalled-common",
+    "wonderwalled-azure",
+    "wonderwalled-idporten",
+    "wonderwalled-maskinporten",
+    "azure-token-generator",
+    "tokenx-token-generator"
+)

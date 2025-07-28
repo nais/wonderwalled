@@ -5,8 +5,10 @@ import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.principal
+import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.nais.common.AuthClient
@@ -19,11 +21,11 @@ import io.nais.common.texas
 
 fun main() {
     server { config ->
-        val tokenx = AuthClient(config.auth, IdentityProvider.TOKEN_X)
+        val azure = AuthClient(config.auth, IdentityProvider.AZURE_AD)
 
         install(Authentication) {
             texas {
-                client = AuthClient(config.auth, IdentityProvider.IDPORTEN)
+                client = azure
                 ingress = config.ingress
             }
         }
@@ -57,13 +59,53 @@ fun main() {
                             return@get
                         }
 
-                        when (val response = tokenx.exchange(audience, principal.token)) {
+                        val target = audience.toScope()
+                        when (val response = azure.exchange(target, principal.token)) {
+                            is TokenResponse.Success -> call.respond(response)
+                            is TokenResponse.Error -> call.respond(response.status, response.error)
+                        }
+                    }
+
+                    get("m2m") {
+                        val audience = call.request.queryParameters["aud"]
+                        if (audience == null) {
+                            call.respond(HttpStatusCode.BadRequest, "missing 'aud' query parameter")
+                            return@get
+                        }
+
+                        val target = audience.toScope()
+                        when (val response = azure.token(target)) {
                             is TokenResponse.Success -> call.respond(response)
                             is TokenResponse.Error -> call.respond(response.status, response.error)
                         }
                     }
                 }
             }
+
+            route("api/public") {
+                post("m2m") {
+                    val formParameters = call.receiveParameters()
+
+                    val audience = formParameters["aud"]
+                    if (audience == null) {
+                        call.respond(HttpStatusCode.BadRequest, "missing 'aud' form parameter")
+                        return@post
+                    }
+
+                    val target = audience.toScope()
+                    when (val response = azure.token(target)) {
+                        is TokenResponse.Success -> call.respond(response.accessToken)
+                        is TokenResponse.Error -> call.respond(response.status, response.error)
+                    }
+                }
+            }
         }
     }.start(wait = true)
 }
+
+private fun String.toScope(): String =
+    if (this.startsWith("https://") || this.startsWith("api://")) {
+        this
+    } else {
+        "api://${this.replace(":", ".")}/.default"
+    }

@@ -34,22 +34,18 @@ Common endpoints for all identity providers:
   - `GET /api/headers` - prints all headers in the request
   - `GET /api/me` - prints all claims for the authenticated user's token
 
-### Endpoints for ID-porten
-
-- `/api/*` - requires a Bearer JWT access token in the `Authorization` header
-  - `GET /api/obo?aud=<cluster>:<namespace>:<app>` - exchanges the authenticated user's token for the given `aud` (audience)
-- `/api/public/*` - unauthenticated, for headless or scripting use
-  - `POST /api/public/obo?aud=<cluster>:<namespace>:<app>&pid=<pid>[&acr=idporten-loa-high]` - headlessly fetches a fake subject token with the given `pid` and optionally `acr`, and exchanges this for a new token for the given `aud` (audience)
-
-### Endpoints for Azure AD
+### Endpoints for wonderwalled-azure
 
 - `/api/*` - requires a Bearer JWT access token in the `Authorization` header
   - `GET /api/obo?aud=<cluster>:<namespace>:<app>` - exchanges the authenticated user's token for the given `aud` (audience)
   - `GET /api/m2m?aud=<cluster>:<namespace>:<app>` - returns a machine-to-machine token for the given `aud` (audience)
-- `/api/public/*` - unauthenticated, for headless or scripting use
-  - `POST /api/public/m2m?aud=<cluster>:<namespace>:<app>` - returns a machine-to-machine token for the given `aud` (audience)
 
-### Endpoints for Maskinporten
+### Endpoints for wonderwalled-idporten
+
+- `/api/*` - requires a Bearer JWT access token in the `Authorization` header
+  - `GET /api/obo?aud=<cluster>:<namespace>:<app>` - exchanges the authenticated user's token for the given `aud` (audience)
+
+### Endpoints for wonderwalled-maskinporten
 
 - `/api/*` - requires a Bearer JWT access token in the `Authorization` header
   - `GET /api/token[?scope=nav:test/api]` - returns a machine-to-machine token with the given scope

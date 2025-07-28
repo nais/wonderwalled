@@ -4,15 +4,6 @@ metadata:
   name: "wonderwalled-idporten"
   namespace: "nais"
 spec:
-  accessPolicy:
-    inbound:
-      rules:
-        - application: wonderwalled-idporten
-    outbound:
-      rules:
-        - application: wonderwalled-idporten
-      external:
-        - host: fakedings.intern.dev.nav.no
   image: {{image}}
   port: 8080
   liveness:

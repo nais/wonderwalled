@@ -1,18 +1,24 @@
 package io.nais
 
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.principal
+import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.nais.common.AuthClient
 import io.nais.common.IdentityProvider
 import io.nais.common.TexasPrincipal
 import io.nais.common.TokenResponse
+import io.nais.common.defaultHttpClient
 import io.nais.common.requestHeaders
 import io.nais.common.server
 import io.nais.common.texas
@@ -27,6 +33,8 @@ fun main() {
                 ingress = config.ingress
             }
         }
+
+        val httpClient = defaultHttpClient()
 
         routing {
             authenticate {
@@ -61,6 +69,46 @@ fun main() {
                             is TokenResponse.Success -> call.respond(response)
                             is TokenResponse.Error -> call.respond(response.status, response.error)
                         }
+                    }
+                }
+            }
+
+            route("api/public") {
+                post("obo") {
+                    val formParameters = call.receiveParameters()
+
+                    val pid = formParameters["pid"]
+                    if (pid == null) {
+                        call.respond(HttpStatusCode.BadRequest, "missing 'pid' form parameter")
+                        return@post
+                    }
+                    val acr = formParameters["acr"] ?: "idporten-loa-high"
+                    if (acr !in listOf("idporten-loa-high", "idporten-loa-substantial")) {
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            "invalid 'acr' form parameter, must be 'idporten-loa-high' or 'idporten-loa-substantial'",
+                        )
+                        return@post
+                    }
+
+                    val token =
+                        httpClient
+                            .get("https://fakedings.intern.dev.nav.no/fake/idporten") {
+                                url {
+                                    parameter("pid", pid)
+                                    parameter("acr", acr)
+                                }
+                            }.body<String>()
+
+                    val audience = formParameters["aud"]
+                    if (audience == null) {
+                        call.respond(HttpStatusCode.BadRequest, "missing 'aud' form parameter")
+                        return@post
+                    }
+
+                    when (val response = tokenx.exchange(audience, token)) {
+                        is TokenResponse.Success -> call.respond(response.accessToken)
+                        is TokenResponse.Error -> call.respond(response.status, response.error)
                     }
                 }
             }
