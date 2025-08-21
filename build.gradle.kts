@@ -1,18 +1,19 @@
 import org.jetbrains.kotlin.daemon.common.trimQuotes
+import org.jmailen.gradle.kotlinter.tasks.LintTask
 
 val konfigVersion = "1.6.10.0"
-val ktorVersion = "3.2.2"
+val ktorVersion = "3.2.3"
 val logstashVersion = "8.1"
 val logbackVersion = "1.5.18"
-val opentelemetryVersion = "1.52.0"
-val opentelemetryKtorVersion = "2.18.0-alpha"
+val opentelemetryVersion = "1.53.0"
+val opentelemetryKtorVersion = "2.19.0-alpha"
 
 plugins {
     application
-    kotlin("jvm") version "2.2.0"
-    id("org.jmailen.kotlinter") version "5.1.1"
+    kotlin("jvm") version "2.2.10"
+    id("org.jmailen.kotlinter") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.52.0"
-    id("com.gradleup.shadow") version "8.3.8" apply false
+    id("com.gradleup.shadow") version "9.0.2" apply false
 }
 
 allprojects {
@@ -44,7 +45,7 @@ subprojects {
             }
         }
 
-        lintKotlin {
+        withType<LintTask> {
             dependsOn("formatKotlin")
         }
 
