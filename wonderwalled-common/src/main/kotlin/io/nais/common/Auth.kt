@@ -36,9 +36,9 @@ enum class IdentityProvider(
 
 sealed class TokenResponse {
     data class Success(
-        @JsonProperty("access_token")
+        @param:JsonProperty("access_token")
         val accessToken: String,
-        @JsonProperty("expires_in")
+        @param:JsonProperty("expires_in")
         val expiresInSeconds: Int,
     ) : TokenResponse()
 
@@ -50,7 +50,7 @@ sealed class TokenResponse {
 
 data class TokenErrorResponse(
     val error: String,
-    @JsonProperty("error_description")
+    @param:JsonProperty("error_description")
     val errorDescription: String,
 )
 
@@ -76,9 +76,9 @@ data class TokenErrorResponse(
  */
 data class TokenIntrospectionResponse(
     val active: Boolean,
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @param:JsonInclude(JsonInclude.Include.NON_NULL)
     val error: String?,
-    @JsonAnySetter @get:JsonAnyGetter
+    @param:JsonAnySetter @get:JsonAnyGetter
     val other: Map<String, Any?> = mutableMapOf(),
 )
 
