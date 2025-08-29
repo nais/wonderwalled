@@ -50,7 +50,7 @@ subprojects {
         }
 
         withType<JavaExec>().named("run") {
-            environment = file("$rootDir/.env")
+            environment = file("local.env")
                 .takeIf { it.exists() }
                 ?.readLines()
                 ?.filterNot { it.isEmpty() || it.startsWith("#") }

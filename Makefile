@@ -1,10 +1,16 @@
 .PHONY: azure idporten maskinporten
 
 azure:
-	ENV_FILE="./wonderwalled-azure/local.env" docker-compose up -d && ./gradlew wonderwalled-azure:run
+	ENV_FILE="./wonderwalled-azure/local.env" \
+	bash -c "trap 'docker-compose down && exit 0' EXIT; \
+	docker-compose up -d && ./gradlew wonderwalled-azure:run"
 
 idporten:
-	ENV_FILE="./wonderwalled-idporten/local.env" docker-compose up -d && ./gradlew wonderwalled-idporten:run
+	ENV_FILE="./wonderwalled-idporten/local.env" \
+	bash -c "trap 'docker-compose down && exit 0' EXIT; \
+	docker-compose up -d && ./gradlew wonderwalled-idporten:run"
 
 maskinporten:
-	ENV_FILE="./wonderwalled-maskinporten/local.env" docker-compose up -d && ./gradlew wonderwalled-maskinporten:run
+	ENV_FILE="./wonderwalled-maskinporten/local.env" \
+	bash -c "trap 'docker-compose down && exit 0' EXIT; \
+	docker-compose up -d && ./gradlew wonderwalled-maskinporten:run"
