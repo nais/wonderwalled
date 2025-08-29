@@ -13,7 +13,6 @@ plugins {
     kotlin("jvm") version "2.2.10"
     id("org.jmailen.kotlinter") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.52.0"
-    id("com.gradleup.shadow") version "9.0.2" apply false
 }
 
 allprojects {
@@ -29,7 +28,6 @@ subprojects {
     apply(plugin = "application")
     apply(plugin = "kotlin")
     apply(plugin = "org.jmailen.kotlinter")
-    apply(plugin = "com.gradleup.shadow")
 
     application {
         mainClass.set("io.nais.WonderwalledKt")

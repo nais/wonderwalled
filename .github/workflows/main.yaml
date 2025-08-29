@@ -32,7 +32,7 @@ jobs:
       - name: Generate and submit dependency graph
         uses: gradle/actions/dependency-submission@017a9effdb900e5b5b2fddfb590a105619dca3c3 # ratchet:gradle/actions/dependency-submission@v4
       - name: Build with Gradle
-        run: ./gradlew clean ${{ matrix.module }}:build ${{ matrix.module }}:shadowJar
+        run: ./gradlew clean ${{ matrix.module }}:build ${{ matrix.module }}:installDist
       - uses: nais/platform-build-push-sign@main # ratchet:exclude
         id: build_push_sign
         with:
