@@ -204,7 +204,7 @@ class TexasAuthenticationProvider(
                 client.introspect(token)
             } catch (e: Exception) {
                 // TODO(user): You should handle the specific exceptions that can be thrown by the HTTP client, e.g. retry on network errors and so on
-                logger.error("unauthenticated: introspect request failed: ${e.message}")
+                logger.error("unauthenticated: introspect request failed", e)
                 context.loginChallenge(AuthenticationFailedCause.Error(e.message ?: "introspect request failed"))
                 return
             }

@@ -8,6 +8,7 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
+import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
@@ -22,6 +23,7 @@ import io.ktor.server.routing.routing
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.instrumentation.ktor.v3_0.KtorClientTelemetry
 import io.opentelemetry.instrumentation.ktor.v3_0.KtorServerTelemetry
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 import org.slf4j.event.Level
 import java.util.UUID
 import io.ktor.client.engine.cio.CIO as ClientCIO
@@ -45,10 +47,16 @@ fun defaultHttpClient() =
         }
     }
 
-fun server(
-    config: Config = Config(),
-    module: Application.(Config) -> Unit,
-) = embeddedServer(ServerCIO, port = config.port) {
+fun start(module: Application.(Config) -> Unit) {
+    val config = Config()
+    AutoConfiguredOpenTelemetrySdk.initialize()
+
+    embeddedServer(CIO, port = config.port) {
+        module(config)
+    }.start(wait = true)
+}
+
+fun Application.installDefaults() {
     install(ServerContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
@@ -89,7 +97,12 @@ fun server(
             }
         }
     }
+}
 
+fun server(
+    config: Config = Config(),
+    module: Application.(Config) -> Unit,
+) = embeddedServer(ServerCIO, port = config.port) {
     module(config)
 }
 

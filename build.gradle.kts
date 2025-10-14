@@ -77,6 +77,11 @@ subprojects {
         implementation("io.opentelemetry:opentelemetry-exporter-otlp:${opentelemetryVersion}")
         implementation("net.logstash.logback:logstash-logback-encoder:${logstashVersion}")
         runtimeOnly("ch.qos.logback:logback-classic:${logbackVersion}")
+
+        // Common test dependencies
+        implementation("io.ktor:ktor-client-mock:${ktorVersion}")
+        implementation("io.ktor:ktor-server-test-host:${ktorVersion}")
+        testImplementation(kotlin("test"))
     }
 }
 

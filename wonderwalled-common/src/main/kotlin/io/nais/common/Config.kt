@@ -7,7 +7,6 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk
 
 private val config =
     systemProperties() overriding
@@ -18,11 +17,8 @@ data class Config(
     val auth: Auth = Auth(config),
     // optional, generally only needed when running locally
     val ingress: String = config.getOrElse(key = Key("login.ingress", stringType), default = ""),
+    val fakedings: Fakedings = Fakedings(),
 ) {
-    init {
-        AutoConfiguredOpenTelemetrySdk.initialize()
-    }
-
     data class Auth(
         val tokenEndpoint: String,
         val tokenExchangeEndpoint: String,
@@ -34,4 +30,9 @@ data class Config(
             tokenIntrospectionEndpoint = config[Key("nais.token.introspection.endpoint", stringType)],
         )
     }
+
+    data class Fakedings(
+        val url: String = config.getOrElse(key = Key("fakedings.url", stringType), default = "https://fakedings.intern.nav.no/fake"),
+        val idporten: String = url.removeSuffix("/") + "/idporten",
+    )
 }

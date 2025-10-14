@@ -7,16 +7,16 @@ Basic toy API in Ktor that showcases usage of Wonderwall from a backend applicat
 
 Requires (almost) all requests received to contain a Bearer token issued by the configured Identity Provider.
 
-[ID-porten](wonderwalled-idporten):
-
-- Expects the token to contain a claim `aud` with a value that matches the client ID of the application's client.
-- Supports Token Exchange using TokenX.
-
 [Azure AD](wonderwalled-azure):
 
 - Expects the token to contain a claim `aud` with a value that matches the client ID of the application's client.
 - Supports the On-Behalf-Of flow.
 - Supports the Client Credentials flow.
+
+[ID-porten](wonderwalled-idporten):
+
+- Expects the token to contain a claim `aud` with a value that matches the client ID of the application's client.
+- Supports Token Exchange using TokenX.
 
 [Maskinporten](wonderwalled-maskinporten):
 
