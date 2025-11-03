@@ -3,14 +3,14 @@ import org.jmailen.gradle.kotlinter.tasks.LintTask
 
 val konfigVersion = "1.6.10.0"
 val ktorVersion = "3.3.1"
-val logstashVersion = "8.1"
+val logstashVersion = "9.0"
 val logbackVersion = "1.5.18"
 val opentelemetryVersion = "1.55.0"
 val opentelemetryKtorVersion = "2.21.0-alpha"
 
 plugins {
     application
-    kotlin("jvm") version "2.2.20"
+    kotlin("jvm") version "2.2.21"
     id("org.jmailen.kotlinter") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.53.0"
 }
@@ -58,29 +58,35 @@ subprojects {
                 } ?: emptyMap()
             environment("OTEL_SERVICE_NAME", project.name)
         }
+        test {
+            useJUnitPlatform()
+            testLogging {
+                events("passed", "skipped", "failed")
+            }
+        }
     }
 
     dependencies {
         implementation(kotlin("stdlib"))
-        implementation("io.ktor:ktor-server:${ktorVersion}")
-        implementation("io.ktor:ktor-server-auth:${ktorVersion}")
-        implementation("io.ktor:ktor-server-cio:${ktorVersion}")
-        implementation("io.ktor:ktor-server-content-negotiation:${ktorVersion}")
-        implementation("io.ktor:ktor-serialization-jackson:${ktorVersion}")
-        implementation("io.ktor:ktor-client-cio:${ktorVersion}")
-        implementation("io.ktor:ktor-client-core:${ktorVersion}")
-        implementation("io.ktor:ktor-client-content-negotiation:${ktorVersion}")
-        implementation("com.natpryce:konfig:${konfigVersion}")
-        implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-3.0:${opentelemetryKtorVersion}")
-        implementation("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
+        implementation("io.ktor:ktor-server:$ktorVersion")
+        implementation("io.ktor:ktor-server-auth:$ktorVersion")
+        implementation("io.ktor:ktor-server-cio:$ktorVersion")
+        implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+        implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+        implementation("io.ktor:ktor-client-cio:$ktorVersion")
+        implementation("io.ktor:ktor-client-core:$ktorVersion")
+        implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+        implementation("com.natpryce:konfig:$konfigVersion")
+        implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-3.0:$opentelemetryKtorVersion")
+        implementation("io.opentelemetry:opentelemetry-sdk:$opentelemetryVersion")
         implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:$opentelemetryVersion")
-        implementation("io.opentelemetry:opentelemetry-exporter-otlp:${opentelemetryVersion}")
-        implementation("net.logstash.logback:logstash-logback-encoder:${logstashVersion}")
-        runtimeOnly("ch.qos.logback:logback-classic:${logbackVersion}")
+        implementation("io.opentelemetry:opentelemetry-exporter-otlp:$opentelemetryVersion")
+        implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
+        runtimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
 
         // Common test dependencies
-        implementation("io.ktor:ktor-client-mock:${ktorVersion}")
-        implementation("io.ktor:ktor-server-test-host:${ktorVersion}")
+        implementation("io.ktor:ktor-client-mock:$ktorVersion")
+        implementation("io.ktor:ktor-server-test-host:$ktorVersion")
         testImplementation(kotlin("test"))
     }
 }
@@ -89,6 +95,7 @@ tasks {
     named("dependencyUpdates", com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask::class).configure {
         val immaturityLevels = listOf("rc", "cr", "m", "beta", "alpha", "preview") // order is important
         val immaturityRegexes = immaturityLevels.map { ".*[.\\-]$it[.\\-\\d]*".toRegex(RegexOption.IGNORE_CASE) }
+
         fun immaturityLevel(version: String): Int = immaturityRegexes.indexOfLast { version.matches(it) }
         rejectVersionIf { immaturityLevel(candidate.version) > immaturityLevel(currentVersion) }
     }
