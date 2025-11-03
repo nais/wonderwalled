@@ -32,7 +32,7 @@ data class Config(
     }
 
     data class Fakedings(
-        val url: String = config.getOrElse(key = Key("fakedings.url", stringType), default = "https://fakedings.intern.nav.no/fake"),
+        val url: String = config.getOrElse(key = Key("fakedings.url", stringType), default = "https://fakedings.intern.dev.nav.no/fake"),
         val idporten: String = url.removeSuffix("/") + "/idporten",
     )
 }
