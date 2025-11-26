@@ -29,9 +29,9 @@ enum class IdentityProvider(
     @JsonValue val alias: String,
 ) {
     MASKINPORTEN("maskinporten"),
-    AZURE_AD("azuread"),
+    ENTRA_ID("entra_id"),
     IDPORTEN("idporten"),
-    TOKEN_X("tokenx"),
+    TOKENX("tokenx"),
 }
 
 sealed class TokenResponse {

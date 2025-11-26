@@ -34,11 +34,11 @@ fun Application.maskinporten(
     installDefaults()
 
     val maskinporten = AuthClient(config.auth, IdentityProvider.MASKINPORTEN, httpClient)
-    val azure = AuthClient(config.auth, IdentityProvider.AZURE_AD, httpClient)
+    val entra = AuthClient(config.auth, IdentityProvider.ENTRA_ID, httpClient)
 
     install(Authentication) {
         texas {
-            client = azure
+            client = entra
             ingress = config.ingress
         }
     }

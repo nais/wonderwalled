@@ -32,11 +32,11 @@ fun Application.azure(
 ) {
     installDefaults()
 
-    val azure = AuthClient(config.auth, IdentityProvider.AZURE_AD, httpClient)
+    val entra = AuthClient(config.auth, IdentityProvider.ENTRA_ID, httpClient)
 
     install(Authentication) {
         texas {
-            client = azure
+            client = entra
             ingress = config.ingress
         }
     }
@@ -71,7 +71,7 @@ fun Application.azure(
                     }
 
                     val target = audience.toScope()
-                    when (val response = azure.exchange(target, principal.token)) {
+                    when (val response = entra.exchange(target, principal.token)) {
                         is TokenResponse.Success -> call.respond(response)
                         is TokenResponse.Error -> call.respond(response.status, response.error)
                     }
@@ -85,7 +85,7 @@ fun Application.azure(
                     }
 
                     val target = audience.toScope()
-                    when (val response = azure.token(target)) {
+                    when (val response = entra.token(target)) {
                         is TokenResponse.Success -> call.respond(response)
                         is TokenResponse.Error -> call.respond(response.status, response.error)
                     }

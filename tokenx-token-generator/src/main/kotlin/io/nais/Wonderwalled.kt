@@ -37,7 +37,7 @@ fun Application.tokenxTokenGenerator(
 ) {
     installDefaults()
 
-    val tokenx = AuthClient(config.auth, IdentityProvider.TOKEN_X, httpClient)
+    val tokenx = AuthClient(config.auth, IdentityProvider.TOKENX, httpClient)
     val idporten = AuthClient(config.auth, IdentityProvider.IDPORTEN, httpClient)
 
     install(Authentication) {
