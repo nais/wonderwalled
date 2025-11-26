@@ -3,6 +3,8 @@ on:
   push:
     branches-ignore:
       - master
+permissions:
+  contents: read
 jobs:
   build:
     name: Build
