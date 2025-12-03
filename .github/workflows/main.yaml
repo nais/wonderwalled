@@ -22,7 +22,7 @@ jobs:
           - wonderwalled-maskinporten
     steps:
       - name: Checkout latest code
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # ratchet:actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # ratchet:actions/checkout@v6
       - name: Set up JDK 21
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # ratchet:actions/setup-java@v5
         with:
@@ -35,7 +35,7 @@ jobs:
         uses: gradle/actions/dependency-submission@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # ratchet:gradle/actions/dependency-submission@v5
       - name: Build with Gradle
         run: ./gradlew clean ${{ matrix.module }}:build ${{ matrix.module }}:installDist
-      - uses: nais/platform-build-push-sign@main # ratchet:exclude
+      - uses: nais/platform-build-push-sign@8be8359cd90915318ee8ab5fbc8337d04937ae70 # ratchet:nais/platform-build-push-sign@main
         id: build_push_sign
         with:
           name: ${{ matrix.module }}
@@ -45,12 +45,12 @@ jobs:
           multi-platform: true
           push: true
           workload_identity_provider: ${{ secrets.NAIS_IO_WORKLOAD_IDENTITY_PROVIDER }}
-      - uses: nais/login@v0 # ratchet:exclude
+      - uses: nais/login@e7cf2c159677dc7c7d599feff5f808f2bf59c7cf # ratchet:nais/login@v0
         with:
           team: nais
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
-      - uses: nais/deploy/actions/deploy@v2 # ratchet:exclude
+      - uses: nais/deploy/actions/deploy@56e14061f2a8437bd9119e7b8f92749a3b288db1 # ratchet:nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
           RESOURCE: .nais/${{ matrix.module }}.yaml
