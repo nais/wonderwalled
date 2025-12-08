@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.daemon.common.trimQuotes
 import org.jmailen.gradle.kotlinter.tasks.LintTask
 
 val konfigVersion = "1.6.10.0"
-val ktorVersion = "3.3.2"
+val ktorVersion = "3.3.3"
 val logstashVersion = "9.0"
 val logbackVersion = "1.5.21"
 val opentelemetryVersion = "1.56.0"
