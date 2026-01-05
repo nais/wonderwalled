@@ -4,13 +4,13 @@ import org.jmailen.gradle.kotlinter.tasks.LintTask
 val konfigVersion = "1.6.10.0"
 val ktorVersion = "3.3.3"
 val logstashVersion = "9.0"
-val logbackVersion = "1.5.22"
+val logbackVersion = "1.5.23"
 val opentelemetryVersion = "1.57.0"
 val opentelemetryKtorVersion = "2.23.0-alpha"
 
 plugins {
     application
-    kotlin("jvm") version "2.2.21"
+    kotlin("jvm") version "2.3.0"
     id("org.jmailen.kotlinter") version "5.3.0"
     id("com.github.ben-manes.versions") version "0.53.0"
 }
