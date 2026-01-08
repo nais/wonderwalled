@@ -53,7 +53,7 @@ Common endpoints for all identity providers:
 
 ## Development
 
-Requires JDK installed, minimum version 21.
+Requires JDK installed, minimum version 25.
 
 ```shell
 make azure
