@@ -30,12 +30,12 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # ratchet:gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # ratchet:gradle/actions/setup-gradle@v5
       - name: Generate and submit dependency graph
-        uses: gradle/actions/dependency-submission@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # ratchet:gradle/actions/dependency-submission@v5
+        uses: gradle/actions/dependency-submission@0723195856401067f7a2779048b490ace7a47d7c # ratchet:gradle/actions/dependency-submission@v5
       - name: Build with Gradle
         run: ./gradlew clean ${{ matrix.module }}:build ${{ matrix.module }}:installDist
-      - uses: nais/platform-build-push-sign@8be8359cd90915318ee8ab5fbc8337d04937ae70 # ratchet:nais/platform-build-push-sign@main
+      - uses: nais/platform-build-push-sign@f276e60f3898b076a67bfc94b52ffbdb885224a7 # ratchet:nais/platform-build-push-sign@main
         id: build_push_sign
         with:
           name: ${{ matrix.module }}
