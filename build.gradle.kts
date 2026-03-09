@@ -4,7 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.LintTask
 val konfigVersion = "1.6.10.0"
 val ktorVersion = "3.4.0"
 val logstashVersion = "9.0"
-val logbackVersion = "1.5.31"
+val logbackVersion = "1.5.32"
 val opentelemetryVersion = "1.59.0"
 val opentelemetryKtorVersion = "2.25.0-alpha"
 
