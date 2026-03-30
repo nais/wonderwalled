@@ -2,15 +2,15 @@ import org.jetbrains.kotlin.daemon.common.trimQuotes
 import org.jmailen.gradle.kotlinter.tasks.LintTask
 
 val konfigVersion = "1.6.10.0"
-val ktorVersion = "3.4.0"
+val ktorVersion = "3.4.1"
 val logstashVersion = "9.0"
 val logbackVersion = "1.5.32"
-val opentelemetryVersion = "1.59.0"
-val opentelemetryKtorVersion = "2.25.0-alpha"
+val opentelemetryVersion = "1.60.1"
+val opentelemetryKtorVersion = "2.26.0-alpha"
 
 plugins {
     application
-    kotlin("jvm") version "2.3.10"
+    kotlin("jvm") version "2.3.20"
     id("org.jmailen.kotlinter") version "5.4.2"
     id("com.github.ben-manes.versions") version "0.53.0"
 }
