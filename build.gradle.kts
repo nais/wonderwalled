@@ -11,7 +11,7 @@ val opentelemetryKtorVersion = "2.27.0-alpha"
 plugins {
     application
     kotlin("jvm") version "2.3.21"
-    id("org.jmailen.kotlinter") version "5.4.2"
+    id("org.jmailen.kotlinter") version "5.5.0"
     id("com.github.ben-manes.versions") version "0.54.0"
 }
 
