@@ -12,7 +12,7 @@ plugins {
     application
     kotlin("jvm") version "2.4.10"
     id("org.jmailen.kotlinter") version "5.6.0"
-    id("com.github.ben-manes.versions") version "0.54.0"
+    id("com.github.ben-manes.versions") version "0.55.0"
 }
 
 allprojects {
