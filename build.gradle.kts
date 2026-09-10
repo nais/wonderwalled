@@ -6,13 +6,13 @@ val ktorVersion = "3.5.2"
 val logstashVersion = "9.0"
 val logbackVersion = "1.6.3"
 val opentelemetryVersion = "1.65.0"
-val opentelemetryKtorVersion = "2.31.0-alpha"
+val opentelemetryKtorVersion = "2.31.1-alpha"
 
 plugins {
     application
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
     id("org.jmailen.kotlinter") version "5.7.0"
-    id("com.github.ben-manes.versions") version "0.61.0"
+    id("io.github.ben-manes.versions") version "0.61.0"
 }
 
 allprojects {
