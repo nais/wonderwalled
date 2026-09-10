@@ -1,18 +1,13 @@
-import org.jetbrains.kotlin.daemon.common.trimQuotes
-import org.jmailen.gradle.kotlinter.tasks.LintTask
 
-val konfigVersion = "1.6.10.0"
-val ktorVersion = "3.5.2"
-val logstashVersion = "9.0"
-val logbackVersion = "1.6.3"
-val opentelemetryVersion = "1.65.0"
-val opentelemetryKtorVersion = "2.31.1-alpha"
+import org.jetbrains.kotlin.daemon.common.trimQuotes
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+import org.jmailen.gradle.kotlinter.tasks.LintTask
 
 plugins {
     application
-    kotlin("jvm") version "2.4.20"
-    id("org.jmailen.kotlinter") version "5.7.0"
-    id("io.github.ben-manes.versions") version "0.61.0"
+    alias(libs.plugins.dependency.updates)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlinter)
 }
 
 allprojects {
@@ -25,69 +20,71 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "application")
-    apply(plugin = "kotlin")
-    apply(plugin = "org.jmailen.kotlinter")
+    pluginManager.apply("org.jetbrains.kotlin.jvm")
+    pluginManager.apply("org.jmailen.kotlinter")
 
-    application {
-        mainClass.set("io.nais.WonderwalledKt")
+    extensions.configure<KotlinJvmProjectExtension> {
+        jvmToolchain(25)
     }
 
-    tasks {
-        kotlin {
-            jvmToolchain(25)
-        }
-        jar {
-            manifest {
-                attributes["Main-Class"] = "io.nais.WonderwalledKt"
-            }
-        }
+    tasks.withType<LintTask>().configureEach {
+        dependsOn("formatKotlin")
+    }
 
-        withType<LintTask> {
-            dependsOn("formatKotlin")
-        }
-
-        withType<JavaExec>().named("run") {
-            environment = file("local.env")
-                .takeIf { it.exists() }
-                ?.readLines()
-                ?.filterNot { it.isEmpty() || it.startsWith("#") }
-                ?.associate {
-                    val (key, value) = it.split("=")
-                    key to value.trimQuotes()
-                } ?: emptyMap()
-            environment("OTEL_SERVICE_NAME", project.name)
-        }
-        test {
-            useJUnitPlatform()
-            testLogging {
-                events("passed", "skipped", "failed")
-            }
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
         }
     }
 
     dependencies {
-        implementation(kotlin("stdlib"))
-        implementation("io.ktor:ktor-server:$ktorVersion")
-        implementation("io.ktor:ktor-server-auth:$ktorVersion")
-        implementation("io.ktor:ktor-server-cio:$ktorVersion")
-        implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
-        implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
-        implementation("io.ktor:ktor-client-cio:$ktorVersion")
-        implementation("io.ktor:ktor-client-core:$ktorVersion")
-        implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-        implementation("com.natpryce:konfig:$konfigVersion")
-        implementation("io.opentelemetry.instrumentation:opentelemetry-ktor-3.0:$opentelemetryKtorVersion")
-        implementation("io.opentelemetry:opentelemetry-sdk:$opentelemetryVersion")
-        implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:$opentelemetryVersion")
-        implementation("io.opentelemetry:opentelemetry-exporter-otlp:$opentelemetryVersion")
-        implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
-        runtimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
+        implementation(platform(rootProject.libs.jacksonBom))
+        implementation(rootProject.libs.httpclient5)
+        implementation(rootProject.libs.konfig)
+        implementation(rootProject.libs.ktorClientCio)
+        implementation(rootProject.libs.ktorClientContentNegotiation)
+        implementation(rootProject.libs.ktorClientCore)
+        implementation(rootProject.libs.ktorClientMock)
+        implementation(rootProject.libs.ktorSerializationJackson)
+        implementation(rootProject.libs.ktorServer)
+        implementation(rootProject.libs.ktorServerAuth)
+        implementation(rootProject.libs.ktorServerCio)
+        implementation(rootProject.libs.ktorServerContentNegotiation)
+        implementation(rootProject.libs.ktorServerTestHost)
+        implementation(rootProject.libs.logstashEncoder)
+        implementation(rootProject.libs.opentelemetryExporterOtlp)
+        implementation(rootProject.libs.opentelemetryKtor)
+        implementation(rootProject.libs.opentelemetrySdk)
+        implementation(rootProject.libs.opentelemetrySdkExtensionAutoconfigure)
+        runtimeOnly(rootProject.libs.logbackClassic)
+        testImplementation(rootProject.libs.kotlinTest)
+    }
+}
 
-        // Common test dependencies
-        implementation("io.ktor:ktor-client-mock:$ktorVersion")
-        implementation("io.ktor:ktor-server-test-host:$ktorVersion")
-        testImplementation(kotlin("test"))
+configure(subprojects.filter { it.name != "wonderwalled-common" }) {
+    pluginManager.apply("application")
+
+    extensions.configure<JavaApplication> {
+        mainClass.set("io.nais.WonderwalledKt")
+    }
+
+    tasks.withType<Jar>().configureEach {
+        manifest {
+            attributes["Main-Class"] = "io.nais.WonderwalledKt"
+        }
+    }
+
+    tasks.named<JavaExec>("run") {
+        environment = file("local.env")
+            .takeIf { it.exists() }
+            ?.readLines()
+            ?.filterNot { it.isEmpty() || it.startsWith("#") }
+            ?.associate {
+                val (key, value) = it.split("=")
+                key to value.trimQuotes()
+            } ?: emptyMap()
+        environment("OTEL_SERVICE_NAME", project.name)
     }
 }
 

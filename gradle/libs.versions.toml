@@ -1,0 +1,40 @@
+[versions]
+httpclient = "5.6.4"
+jackson = "3.2.2"
+konfig = "1.6.10.0"
+kotlinter = "5.7.0"
+kotlin = "2.4.20"
+ktor = "3.5.2"
+logback = "1.6.3"
+logstash-encoder = "9.0"
+opentelemetry = "1.65.0"
+opentelemetry-ktor = "2.31.1-alpha"
+versions-plugin = "0.61.0"
+
+[libraries]
+httpclient5 = { module = "org.apache.httpcomponents.client5:httpclient5", version.ref = "httpclient" }
+jacksonBom = { module = "tools.jackson:jackson-bom", version.ref = "jackson" }
+konfig = { module = "com.natpryce:konfig", version.ref = "konfig" }
+kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+logstashEncoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-encoder" }
+opentelemetryExporterOtlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp", version.ref = "opentelemetry" }
+opentelemetryKtor = { module = "io.opentelemetry.instrumentation:opentelemetry-ktor-3.0", version.ref = "opentelemetry-ktor" }
+opentelemetrySdk = { module = "io.opentelemetry:opentelemetry-sdk", version.ref = "opentelemetry" }
+opentelemetrySdkExtensionAutoconfigure = { module = "io.opentelemetry:opentelemetry-sdk-extension-autoconfigure", version.ref = "opentelemetry" }
+
+ktorClientCio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktorClientContentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktorClientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktorClientMock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktorSerializationJackson = { module = "io.ktor:ktor-serialization-jackson", version.ref = "ktor" }
+ktorServer = { module = "io.ktor:ktor-server", version.ref = "ktor" }
+ktorServerAuth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
+ktorServerCio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+ktorServerContentNegotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktorServerTestHost = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
+
+[plugins]
+dependency-updates = { id = "io.github.ben-manes.versions", version.ref = "versions-plugin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinter = { id = "org.jmailen.kotlinter", version.ref = "kotlinter" }
