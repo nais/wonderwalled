@@ -40,6 +40,7 @@ subprojects {
 
     dependencies {
         implementation(platform(rootProject.libs.jacksonBom))
+        implementation(platform(rootProject.libs.jackson2Bom))
         implementation(rootProject.libs.httpclient5)
         implementation(rootProject.libs.konfig)
         implementation(rootProject.libs.ktorClientCio)
