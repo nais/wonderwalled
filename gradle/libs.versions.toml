@@ -1,16 +1,16 @@
 [versions]
-httpclient = "5.6.4"
-jackson = "3.2.3"
-jackson2 = "2.22.3"
+httpclient = "5.6.5"
+jackson = "3.2.4"
+jackson2 = "2.22.4"
 konfig = "1.6.10.0"
 kotlinter = "5.7.0"
 kotlin = "2.4.21"
 ktor = "3.6.0"
-logback = "1.6.5"
+logback = "1.6.6"
 logstash-encoder = "9.0"
-opentelemetry = "1.66.0"
-opentelemetry-ktor = "2.32.0-alpha"
-versions-plugin = "0.65.0"
+opentelemetry = "1.67.0"
+opentelemetry-ktor = "2.33.1-alpha"
+versions-plugin = "0.66.0"
 
 [libraries]
 httpclient5 = { module = "org.apache.httpcomponents.client5:httpclient5", version.ref = "httpclient" }
