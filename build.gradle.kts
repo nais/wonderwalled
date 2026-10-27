@@ -1,4 +1,3 @@
-
 import org.jetbrains.kotlin.daemon.common.trimQuotes
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jmailen.gradle.kotlinter.tasks.LintTask
@@ -98,3 +97,4 @@ tasks {
         rejectVersionIf { immaturityLevel(candidate.version) > immaturityLevel(currentVersion) }
     }
 }
+//
